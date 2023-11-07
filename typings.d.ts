@@ -1,9 +1,15 @@
 interface Message{
-    text: string,
-    createAt: admin.firestore.Timestamp;
-    user: {
-        _id: string;
-        name: string;
-        avatar: string;
+    "content": string,
+    "createAt": admin.firestore.Timestamp;
+    "user": {
+        "_id": string;
+        "name": string;
+        "avatar": string;
+        "role": string;
     };
 }
+
+interface ChatCompletionMessageParam{
+    "role": string;
+    "content": string;
+  };

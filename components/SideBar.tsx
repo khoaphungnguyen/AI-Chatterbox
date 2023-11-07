@@ -44,9 +44,6 @@ function SideBar() {
    />
    <p className="text-red-700 font-semibold tracking-wide uppercase">Log out</p>
 </div>
-    
-     
-        
       ) }
     </div>
   )

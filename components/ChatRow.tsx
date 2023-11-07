@@ -36,7 +36,7 @@ function ChatRow({id}: Props) {
     "bg-gray-700/50" }`}>
         <ChatBubbleLeftIcon className='h-5 w-5'/>
         <p className='flex-1 hidden md:inline-flex truncate'>
-           {messages?.docs[messages?.docs.length -1]?.data().text || 
+           {messages?.docs[messages?.docs.length -1]?.data().content || 
            "New Chat"}
         </p>
         <TrashIcon onClick={removeChat} className='h-5 w-5 text-gray-700 hover:text-red-700'/>

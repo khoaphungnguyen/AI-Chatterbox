@@ -4,27 +4,25 @@ import admin from "firebase-admin"
 import { adminDb } from '@/firebaseAdmin';
 
 export async function POST(req: NextRequest) {
-
-  const { prompt, chatId, model, session } = await req.json();
-
-  if (!prompt){
-    return NextResponse.json({ error: "Please provide a prompt!" }, { status: 400 } )
-    
+  const { messages, chatId, model, session } = await req.json();
+  if (!messages){
+    return NextResponse.json({ error: "Please provide messages!" }, { status: 400 } )
   }
   if (!chatId){
     return NextResponse.json({ error: "Please provide a valid chat ID!" }, { status: 400 })
   }
 
   // ChatGPT Query
-  const response = await query(prompt,chatId, model)
+  const response = await query(messages, model)
 
   const message:Message = {
-    text: response || "Chat was unable to find an answer for that!",
-    createAt: admin.firestore.Timestamp.now(),
-    user: {
-      _id: "ChatGPT",
-      name: "ChatGPT",
-      avatar: "/chatgpt-icon.png",
+    "content": response || "Chat was unable to find an answer for that!",
+    "createAt": admin.firestore.Timestamp.now(),
+    "user": {
+      "_id": "ChatGPT",
+      "name": "ChatGPT",
+      "avatar": "/chatgpt-icon.png",
+      "role":"assistant"
     },
   };
 
@@ -36,6 +34,6 @@ export async function POST(req: NextRequest) {
   .collection("messages")
   .add(message);
 
-  return NextResponse.json({ answer: message.text }, { status: 200 })
+  return NextResponse.json({ answer: message.content}, { status: 200 })
 }
 
