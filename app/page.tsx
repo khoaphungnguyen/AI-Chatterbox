@@ -1,11 +1,75 @@
+'use client'
 import {
   BoltIcon,
   PaperAirplaneIcon,
   SparklesIcon,
 } from "@heroicons/react/20/solid";
-
+import {useState} from 'react'
+import useSWR  from "swr";
+import { useSession } from 'next-auth/react'
+import { collection, serverTimestamp, addDoc, orderBy, query  } from 'firebase/firestore'
+import { db } from '@/firebase'
+import { useRouter } from "next/navigation";
+import toast from 'react-hot-toast'
 
 export default function Home() {
+   const router = useRouter()
+   const [prompt, setPrompt] = useState("");
+   const {data: session} = useSession()
+  const { data: model} = useSWR('model',{
+    fallbackData: 'gpt-3.5-turbo-0613'
+  })
+
+  const createNewChat = async(event:React.MouseEvent<HTMLButtonElement, MouseEvent>) =>{
+    event.preventDefault();
+    if (!prompt) return;
+    const input = prompt.trim();
+    setPrompt("")
+
+    const doc = await addDoc(collection(db, "users", session?.user?.email!, 'chats'),{
+      userId: session?.user?.email!,
+      createAt: serverTimestamp(),
+    })
+
+    const chatId = doc.id
+    const message: Message = {
+        "content": input,
+        "createAt": serverTimestamp(),
+        "user": {
+            "_id": session?.user?.email!,
+            "name": session?.user?.name!,
+            "avatar": session?.user?.image! || `https://ui-avatars.com/api/?name=${session?.user?.name}`,
+            "role":"user"
+        }
+    };
+
+    await addDoc(collection(db, "users", session?.user?.email!, "chats", chatId, 'messages'),
+     message)
+
+    //Toast notificaiton to say Loading!
+    const notificaiton = toast.loading("ChatGPT is thinking...");
+
+    await fetch('/api/askQuestions',{
+        method:"POST",
+        headers: {
+            "Content-Type":"application/json"
+        },
+        body: JSON.stringify({
+            messages: [{"role":'user', "content": input}],
+            chatId, 
+            model, 
+            session
+        }),
+     }).then(()=>{
+        // Toast notification to say successful!
+        toast.success("ChatGPT has responded",{
+            id:notificaiton,
+        })
+     });
+
+   //router.push(`/chat/${chatId}`)
+}
+
   return (
     <div className="flex h-full flex-col items-center justify-between pb-64">
       <div className="px-2 w-full flex flex-col py-2 md:py-6 sticky top-0">
@@ -20,16 +84,18 @@ export default function Home() {
                   aria-expanded="false"
                 >
                   <div
-                    className=" relative flex w-full items-center justify-center gap-1 rounded-lg border py-3 
-                    outline-none transition-opacity duration-100 sm:w-auto sm:min-w-[148px] md:gap-2 md:py-2.5 border-black/10 shadow-[0_1px_7px_0px_rgba(0,0,0,0.06)]
-                     group-hover:!opacity-100 border-[#4E4F60] group-hover:bg-gray-700 text-gray-500 group-hover:text-gray-100"
+                    className= {`relative flex w-full items-center justify-center gap-1 rounded-lg border py-3 
+                    outline-none transition-opacity duration-100 sm:w-auto sm:min-w-[148px] text-gray-500 md:gap-2 md:py-2.5 border-black/10 shadow-[0_1px_7px_0px_rgba(0,0,0,0.06)]
+                     group-hover:!opacity-100 border-[#4E4F60]group-hover:bg-gray-700 group-hover:text-gray-100
+                     ${model.includes("3") ? "opacity-100 bg-gray-700 text-gray-100" :"" }`}
                   >
                     <span className="max-[370px]:hidden relative"></span>
                     <span className="truncate text-sm font-meidum md:pr-1.5 pr-1.5">
                       GPT 3.5
                     </span>
                     <span>
-                      <BoltIcon className="w-5 h-5 group-hover:text-[#19C37D]" />
+                    <BoltIcon className={`w-5 h-5 group-hover:text-[#19C37D] ${model.includes("3") ? 'text-[#19C37D]' : ''}`} />
+
                     </span>
                   </div>
                 </button>
@@ -42,12 +108,14 @@ export default function Home() {
                   aria-expanded="false"
                 >
                   <div
-                    className="relative flex w-full items-center justify-center gap-1 rounded-lg border py-3 
-                    outline-none transition-opacity duration-100 sm:w-auto sm:min-w-[148px] md:gap-2 md:py-2.5 border-black/10 shadow-[0_1px_7px_0px_rgba(0,0,0,0.06)]
-                     group-hover:opacity-100 border-[#4E4F60]  group-hover:bg-gray-700 text-gray-500  group-hover:text-gray-100"
+                    className={`relative flex w-full items-center justify-center gap-1 rounded-lg border py-3 
+                    outline-none transition-opacity duration-100 sm:w-auto sm:min-w-[148px] md:gap-2 md:py-2.5
+                     border-black/10 shadow-[0_1px_7px_0px_rgba(0,0,0,0.06)] group-hover:opacity-100 border-[#4E4F60] 
+                      group-hover:bg-gray-700 text-gray-500 group-hover:text-gray-100 
+                      ${model.includes("4") ? "opacity-100 bg-gray-700 text-gray-100": "" }` }
                   >
                     <span className="max-[370px]:hidden relative">
-                      <SparklesIcon className="w-5 h-5  group-hover:text-[#A263F1]" />
+                      <SparklesIcon  className={`w-5 h-5 group-hover:text-[#A263F1] ${model.includes("4") ? 'text-[#A263F1]' : ''}`} />
                     </span>
                     <span className="truncate text-sm font-meidum md:pr-1.5 pr-1.5">
                       GPT 4
@@ -176,12 +244,17 @@ export default function Home() {
             className="m-0 w-full resize-none focus:border-gray-500 bg-transparent placeholder-white/50
              rounded-xl focus:border-2 p-2 pl-4 pt-2 "
             placeholder="Send a message"
+            value={prompt}
+            onChange={e => setPrompt(e.target.value)}
           ></textarea>
-            <button className="absolute p-1 rounded-md md:bottom-3 md:p-2 md:right-3 disabled:hover:bg-transparent right-2 disabled:text-gray-400 enabled:bg-brand-purple  text-white 
-            bottom-1.5 transition-colors disabled:opacity-40" >
-              <PaperAirplaneIcon className="w-6 h-6 hover:text-sky-600"/>
+            <button
+              onClick={createNewChat}
+              disabled={!prompt}
+              className="absolute p-1 rounded-md md:bottom-3 md:p-2 md:right-3 disabled:hover:bg-transparent right-2 disabled:text-gray-400 enabled:bg-brand-purple text-white bottom-1.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <PaperAirplaneIcon className="w-6 h-6 hover:text-[#11A37F]" />
             </button>
-
+       
             </div>
           </div>
         </form>

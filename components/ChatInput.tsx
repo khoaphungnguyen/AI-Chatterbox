@@ -57,6 +57,7 @@ function ChatInput({chatId}:Props) {
             }) || [];
 
         const updatedMessages:ChatCompletionMessageParam[] = [...oldMessages, {"role":'user', "content": input}];
+        
 
 
         await fetch('/api/askQuestions',{

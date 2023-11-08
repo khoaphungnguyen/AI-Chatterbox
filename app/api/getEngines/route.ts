@@ -1,16 +1,5 @@
-import  query  from '@/lib/queryApi';
 import { NextRequest,NextResponse } from 'next/server'
 import openai from "@/lib/chatGPT"
-
-type Option = {
-    value: string;
-    label: string;
-}
-
-type Data = {
-    modelOptions: Option[];
-}
-
 
 export async function GET(req: NextRequest, res: NextResponse ){
 

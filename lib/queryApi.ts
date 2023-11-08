@@ -14,7 +14,6 @@ const query = async (messages: [], model: string) => {
         });
 
         // Assuming the response structure matches the API version you're using
-        console.log(response)
         const message = response.choices[0].message.content;
         return message;
     } catch (error: unknown) {
