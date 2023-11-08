@@ -19,7 +19,7 @@ function ChatInput({chatId}:Props) {
 
     const { data: model} = useSWR('model',{
         fallbackData: 'gpt-3.5-turbo-0613'
-      })
+    })
 
       const [oldMessage] = useCollection(session && query(
         collection(db,"users", session?.user?.email!, "chats", chatId,
@@ -57,9 +57,7 @@ function ChatInput({chatId}:Props) {
             }) || [];
 
         const updatedMessages:ChatCompletionMessageParam[] = [...oldMessages, {"role":'user', "content": input}];
-        
-
-
+    
         await fetch('/api/askQuestions',{
             method:"POST",
             headers: {

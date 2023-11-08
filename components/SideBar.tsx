@@ -7,6 +7,7 @@ import { collection, orderBy,query } from "firebase/firestore";
 import {db} from "@/firebase"
 import ChatRow from "./ChatRow";
 import ModeSelection from "./ModeSelection";
+import Image from "next/image";
 
 function SideBar() {
   const {data:session} = useSession();
@@ -37,10 +38,12 @@ function SideBar() {
       </div>
       {session && (
       <div className="flex items-center justify-center mx-auto mb-4 p-2 hover:bg-gray-700 rounded-lg transition-all duration-300 cursor-pointer shadow-md" onClick={() => signOut()}>
-   <img 
-       src={session.user?.image!} 
+   <Image 
+       src={`${session.user?.image!}`} 
        alt="Profile" 
        className="h-10 w-10 rounded-full mr-3 border-2 border-red-700"
+       width={10}
+       height={10}
    />
    <p className="text-red-700 font-semibold tracking-wide uppercase">Log out</p>
 </div>

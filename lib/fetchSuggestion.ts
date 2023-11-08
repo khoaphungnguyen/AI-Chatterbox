@@ -1,19 +1,16 @@
 import openai from "./chatGPT"
 
-const query = async (messages: [], model: string) => {
+const fetchSuggestion = async ( model: string) => {
     try {
-        const response = await openai.chat.completions.create({
-        model: model,
-        messages: messages,
-        temperature: 0.7,
-        top_p: 1,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-        max_tokens: 1000,
-        n: 1,
-        });
+        const response = await openai.completions.create({
+            model,
+            prompt: "Give me a brief recommendation of no more than 20 words on a random topic that could intrigue and engage users.",
+            max_tokens: 100,
+            temperature: 0.8,
+    
+        })
 
-        const message = response.choices[0].message.content;
+        const message = response.choices[0].text;
         return message;
     } catch (error: unknown) {
         // Narrowing down the type of the error to an instance of Error
@@ -26,4 +23,4 @@ const query = async (messages: [], model: string) => {
     }
 };
 
-export default query;
+export default fetchSuggestion;

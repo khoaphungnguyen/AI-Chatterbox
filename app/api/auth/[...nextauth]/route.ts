@@ -36,3 +36,4 @@ export const nextAuthOptions = {
 export const handler = NextAuth(nextAuthOptions)
 
 export {handler as GET, handler as POST}
+
