@@ -1,7 +1,7 @@
 import openai from "./chatGPT"
 
 const fetchSuggestion = async (model: string) => {
-    const prompt= `Give me four brief recommendations of no more than 20 words on a random topic that could intrigue and engage users in only JSON format like this [{ "title":" like how to do thing something.", content:"... }, {}, {}]`
+    const prompt= `"Provide four engaging recommendations (max 10 words each) as JSON: [{ "title": "", "content": "" }, ...]"`
     try {
         const response = await openai.chat.completions.create({
                 model: model,

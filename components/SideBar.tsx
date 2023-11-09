@@ -16,7 +16,7 @@ function SideBar() {
   , orderBy("createAt", "asc")));
 
   return (
-    <div className="flex p-2 flex-col h-screen">
+    <div className="flex flex-col h-screen p-4 overflow-y-auto">
       <div className="flex-1">
         <div>
           <NewChat />

@@ -12,23 +12,23 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-   const session = await getServerSession(nextAuthOptions); 
+  const session = await getServerSession(nextAuthOptions); 
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" className="h-full bg-gray-900">
+          <body className="h-full">
         <SessionProvider session={session}>
           {!session ? (
             <Login /> 
           ) : (
-            <div className="flex">
-              <div className="bg-[#202123] h-screen overflow-y-auto max-w-0 sm:min-w-[10rem] md:min-w-[20rem]">
+            <div className="flex flex-col lg:flex-row min-h-screen">
+              <div className="hidden lg:block lg:w-64 xl:w-80 bg-[#20232b] overflow-y-auto h-full">
                 <SideBar />
               </div>
-
-              {/* ClientProvider - Toast */}
-              <ClientProvider />
-              <div className="bg-[#343541] flex-1">{children}</div>
-              <Analytics />
+              <div className="flex-1 bg-gray-800 sm:h-screen">
+                <ClientProvider />
+                {children}      
+                <Analytics />
+              </div>
             </div>
            )} 
         </SessionProvider> 

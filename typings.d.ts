@@ -13,3 +13,6 @@ interface ChatCompletionMessageParam{
     "role": string;
     "content": string;
   };
+
+
+type FetcherParams = [string, string];
