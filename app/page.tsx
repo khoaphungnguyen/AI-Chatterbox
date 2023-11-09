@@ -1,44 +1,46 @@
 'use client'
 import { BoltIcon, PaperAirplaneIcon, SparklesIcon } from "@heroicons/react/20/solid";
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import useSWR from "swr";
 import { useSession } from 'next-auth/react';
 import { collection, serverTimestamp, addDoc } from 'firebase/firestore';
-import { db } from '@/firebase';
-import { useRouter } from "next/navigation"; 
-import  query  from '@/lib/queryApi';
+import { db } from '@/firebase'; // Ensure this path is correct for your project
+import { useRouter } from "next/navigation"; // Corrected import for useRouter
 import toast from 'react-hot-toast';
 
+interface Suggestion {
+  title: string;
+  desc: string;
+}
+
+const fetcher = async (url: string, model: string) => {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ model }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Network response was not ok');
+  }
+
+  const data = await response.json();
+  return data.answer; // This should match the shape that your API sends back
+};
+
 export default function Home() {
-  const router = useRouter();
-  const [prompt, setPrompt] = useState("");
-  const { data: session } = useSession();
-  const { data: model} = useSWR('model',{
-    fallbackData: 'gpt-3.5-turbo-0613'
-  })
-    // State to store the suggestions
-    const [suggestions, setSuggestions] = useState([]);
+    const router = useRouter();
+    const [prompt, setPrompt] = useState('');
+    const { data: session } = useSession();
+    const { data: model } = useSWR('model', { fallbackData: 'gpt-3.5-turbo-0613' });
   
-    // Function to fetch suggestions from an API
-    const fetchSuggestions = async () => {
-      try {
-        const messages = [
-          {
-            "role": 'user',
-            "content": "Give me a brief recommendation of no more than 20 words on a random topic that could intrigue and engage users."
-          }
-        ];
-        const message = await query(messages, model);
-        setSuggestions(prevSuggestions => [...prevSuggestions, message]); // Update the state with the fetched suggestion
-      } catch (error) {
-        console.error('Error fetching suggestions:', error);
-      }
-    };
-    
-    // Invoke fetchSuggestions inside a useEffect hook to load suggestions when the component mounts
-    useEffect(() => {
-      fetchSuggestions();
-    }, []);
+    // useSWR hook to fetch suggestions
+    const { data: suggestions, error: suggestionsError } = useSWR(['/api/fetchSuggestions', model], fetcher, {
+      shouldRetryOnError: false,
+      revalidateOnFocus: false,
+    });
 
   const createNewChat = async(event:React.MouseEvent<HTMLButtonElement, MouseEvent>) =>{
     event.preventDefault();
@@ -100,6 +102,7 @@ export default function Home() {
     setPrompt("");
 };
   return (
+   
     <div className="flex h-full flex-col items-center justify-between pb-64">
        {/* Model selection bar */}
       <div className="w-full px-2 py-2 sticky top-0 md:py-6">
@@ -176,7 +179,9 @@ export default function Home() {
         <form className="flex flex-col gap-3 mx-2 md:mx-4 lg:mx-auto lg:max-w-2xl xl:max-w-3xl last:mb-2 md:last:mb-6">
        
        {/* Suggestion Buttons */}
-      {suggestions.map((suggestion, index) => (
+      {suggestionsError && <div>Failed to load suggestions.</div>}
+      {!suggestions && <div>Loading suggestions...</div>}
+      {suggestions && suggestions.map((suggestion: Suggestion, index: number) => (
         <div key={index} className="flex flex-col gap-3">
           <div className="border rounded-xl p-2 border-gray-500 hover:border-gray-100">
             <button className="btn relative btn-neutral group w-full whitespace-nowrap rounded-xl text-left shadow-[0px_1px_6px_0px_rgba(0,0,0,0.02)] text-gray-300 md:whitespace-normal">
@@ -187,7 +192,7 @@ export default function Home() {
                       {suggestion.title}
                     </div>
                     <div className="truncate opacity-50">
-                      {suggestion.description}
+                      {suggestion.desc}
                     </div>
                   </div>
                 </div>
@@ -195,7 +200,7 @@ export default function Home() {
             </button>
           </div>
         </div>
-      ))}
+      ))}  
 
            {/* Input form */}
            <div className="flex w-full items-center justify-center">
@@ -217,6 +222,6 @@ export default function Home() {
         </div>
         </form>
       </div>
-    </div>
+      </div>
   );
 }

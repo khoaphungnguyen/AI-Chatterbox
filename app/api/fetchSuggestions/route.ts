@@ -8,8 +8,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Please provide model!" }, { status: 400 } )
   }
   const response = await fetchSuggestion(model)
-  
-
   return NextResponse.json({ answer: response}, { status: 200 })
 }
 
