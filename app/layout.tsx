@@ -15,16 +15,18 @@ export default async function RootLayout({
   const session = await getServerSession(nextAuthOptions); 
   return (
     <html lang="en" className="h-full bg-gray-900">
+          <head>
+          < link className="text-red-500" rel="icon" href="/RapidSec.svg" sizes="any" />
+          </head>
           <body className="h-full">
         <SessionProvider session={session}>
           {!session ? (
             <Login /> 
           ) : (
             <div className="flex flex-col lg:flex-row min-h-screen">
-              <div className="hidden lg:block lg:w-64 xl:w-80 bg-[#20232b] overflow-y-auto h-full">
-                <SideBar />
-              </div>
+              
               <div className="flex-1 bg-gray-800 sm:h-screen">
+                <SideBar />
                 <ClientProvider />
                 {children}      
                 <Analytics />

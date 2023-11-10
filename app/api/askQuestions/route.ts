@@ -19,9 +19,9 @@ export async function POST(req: NextRequest) {
     "content": response || "Chat was unable to find an answer for that!",
     "createAt": admin.firestore.Timestamp.now(),
     "user": {
-      "_id": "ChatGPT",
-      "name": "ChatGPT",
-      "avatar": "/chatgpt-icon.png",
+      "_id": "SmartChat",
+      "name": "SmartChat",
+      "avatar": "/icon.png",
       "role":"assistant"
     },
   };

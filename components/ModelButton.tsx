@@ -4,7 +4,7 @@ import { BoltIcon, SparklesIcon } from "@heroicons/react/24/solid";
 type ModelButtonProps = {
   label: string;
   isActive: boolean;
-  icon: 'bolt' | 'sparkles'; // assuming 'bolt' and 'sparkles' are the only two icons
+  icon: 'bolt' | 'sparkles';
 };
 
 const ModelButton = ({ label, isActive, icon }: ModelButtonProps) => {

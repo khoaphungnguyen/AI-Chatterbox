@@ -46,7 +46,7 @@ function ChatInput({chatId}:Props) {
          message)
 
         //Toast notificaiton to say Loading!
-        const notificaiton = toast.loading("SmartCHAT is thinking...");
+        const notificaiton = toast.loading("SmartChat is thinking...");
 
         const oldMessages = oldMessage?.docs.map(msg => {
             const data = msg.data()
@@ -71,7 +71,7 @@ function ChatInput({chatId}:Props) {
             }),
          }).then(()=>{
             // Toast notification to say successful!
-            toast.success("SmartCHAT has responded",{
+            toast.success("SmartChat has responded",{
                 id:notificaiton,
             })
          });

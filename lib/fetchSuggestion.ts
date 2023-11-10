@@ -18,10 +18,10 @@ const fetchSuggestion = async (model: string) => {
     } catch (error: unknown) {
         // Narrowing down the type of the error to an instance of Error
         if (error instanceof Error) {
-            return `chatGPT was unable to find an answer for that! (Error:${error.message})`;
+            return `SmartChat was unable to find an answer for that! (Error:${error.message})`;
         } else {
             // Handle any other types or just re-throw
-            return `chatGPT encountered an unknown error!`;
+            return `SmartChat encountered an unknown error!`;
         }
     }
 };

@@ -1,13 +1,14 @@
 const MainTitle = () => (
-    <div className="text-center py-8">
-      <h1 className="text-5xl font-semibold">
-        Smart
-        <span className="inline-block bg-yellow-500 text-yellow-900 ml-2 px-3 py-1 rounded-full text-sm font-semibold animate-bounce">
-          CHAT
-        </span>
-      </h1>
-    </div>
-  );
-  
-  export default MainTitle;
-  
+  <div className="text-center py-8">
+    <h1 className="text-5xl font-semibold relative inline-block">
+      Rapid
+      <span className="absolute top-2 transform translate-x-full 
+      -translate-y-full bg-yellow-500 text-yellow-900 px-3 py-1 
+      rounded-full text-base font-semibold animate-bounce">
+        Sec
+      </span>
+    </h1>
+  </div>
+);
+
+export default MainTitle;

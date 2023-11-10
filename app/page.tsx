@@ -49,7 +49,7 @@ export default function Home() {
   : null;
 
   // Function to handle chat creation
-  const sendMessage = async (event: React.FormEvent<HTMLFormElement>) => {
+  const sendMessage = async (event:  React.FormEvent<HTMLFormElement> | React.KeyboardEvent<HTMLTextAreaElement>) => {
     event.preventDefault();
     if (!prompt.trim()) return;
 
@@ -62,24 +62,27 @@ export default function Home() {
       return;
     }
     try {
-      const chatDocRef = await addDoc(collection(db, "users", session.user.email, 'chats'), {
-        userId: session.user.email,
-        createdAt: serverTimestamp(),
-      });
+
+      const doc = await addDoc(collection(db, "users", session?.user?.email!, 'chats'),{
+        userId: session?.user?.email!,
+        createAt: serverTimestamp(),
+      })
+
+      router.push(`/chat/${doc.id}`);
 
       const message = {
-        content: prompt,
-        createdAt: serverTimestamp(),
-        user: {
-          _id: session.user.email,
-          name: session.user.name,
-          avatar: session.user.image || `https://ui-avatars.com/api/?name=${session.user.name}`,
+        "content": input,
+        "createAt": serverTimestamp(),
+        "user": {
+          "_id": session.user.email,
+          "name": session.user.name,
+          "avatar": session.user.image || `https://ui-avatars.com/api/?name=${session.user.name}`,
           role: "user",
         },
       };
 
-      await addDoc(collection(db, "users", session.user.email, "chats", chatDocRef.id, 'messages'), message);
-      const notification = toast.loading("ChatGPT is thinking...");
+      await addDoc(collection(db, "users", session.user.email, "chats", doc.id, 'messages'), message);
+      const notification = toast.loading("SmartChat is thinking...");
 
       const response = await fetch('/api/askQuestions', {
         method: "POST",
@@ -88,7 +91,7 @@ export default function Home() {
         },
         body: JSON.stringify({
           messages: [{ role: 'user', content: prompt }],
-          chatId: chatDocRef.id,
+          chatId: doc.id,
           model,
           session,
         }),
@@ -96,11 +99,11 @@ export default function Home() {
 
       if (!response.ok) throw new Error('Network response was not ok.');
 
-      toast.success("ChatGPT has responded", {
+      toast.success("SmartChat has responded", {
         id: notification,
       });
 
-      router.push(`/chat/${chatDocRef.id}`);
+      
     } catch (error) {
       console.error("Failed to create new chat:", error);
       toast.error("There was an issue starting the chat.");
@@ -110,11 +113,11 @@ export default function Home() {
 };
 
 return (
-  <div className="flex flex-col h-full justify-between bg-gray-800 text-gray-100 p-4">
+  <div className="flex flex-col h-full justify-between  text-gray-100 p-4">
     <Header model={model} />
     <MainTitle />
-    <SuggestionsSection suggestions={parsedSuggestions} error={suggestionsError} loading={isLoading} />
-    <ChatForm prompt={prompt} setPrompt={setPrompt} sendMessage={sendMessage} session={session}/>
+    <SuggestionsSection suggestions={parsedSuggestions} error={suggestionsError} loading={isLoading} setPrompt={setPrompt}  sendMessage={sendMessage} session={session}/>
+    <ChatForm prompt={prompt} setPrompt={setPrompt} sendMessage={sendMessage} session={session} />
   </div>
 );
 }
