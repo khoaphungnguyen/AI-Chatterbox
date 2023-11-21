@@ -13,9 +13,9 @@ import { Bars4Icon } from "@heroicons/react/20/solid";
 
 function SideBar() {
   const { data: session } = useSession();
-  const [chats, loading, error] = useCollection(
-    session && query(collection(db, "users", session?.user?.email!, "chats")
-  , orderBy("createAt", "asc")));
+  // const [chats, loading, error] = useCollection(
+  //   session && query(collection(db, "users", session?.user?.email!, "chats")
+  // , orderBy("createAt", "asc")));
   const [isOpen, setIsOpen] = useState(false); // State to manage sidebar visibility
 
   // Function to toggle sidebar
@@ -47,16 +47,16 @@ function SideBar() {
               <div className="hidden">
                 <ModeSelection />
               </div>
-              {loading && (
+              {/* {loading && (
                 <div className="animate-pulse text-center text-white">
                   <p>Loading Chats...</p>
                 </div>
-              )}
-              <div className="flex flex-col space-y-2 my-2">
+              )} */}
+              {/* <div className="flex flex-col space-y-2 my-2">
                 {chats?.docs.map((chat) => (
                   <ChatRow key={chat.id} id={chat.id} />
                 ))}
-              </div>
+              </div> */}
             </div>
             
             {/* Logout Section */}
