@@ -1,20 +1,16 @@
 import { PlusIcon } from "@heroicons/react/24/outline"
-import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation";
-import  {addDoc, collection, serverTimestamp} from "firebase/firestore"
-import {db} from "@/firebase"
 
 function NewChat() {
   const router = useRouter()
-  const {data:session} = useSession();
-
   const createNewChat = async() => {
-    const doc = await addDoc(collection(db, "users", session?.user?.email!, 'chats'),{
-      userId: session?.user?.email!,
-      createAt: serverTimestamp(),
-    })
-
-    router.push(`/chat/${doc.id}`)
+    const response  = await fetch('/api/getThread')
+    if (!response.ok) {
+      throw new Error('Failed to create thread');
+    }
+    const data = await response.json();
+    console.log('Thread ID:', data.threadId.id);
+    router.push(`/chat/${data.threadId.id}`)
   }
   return (
     <div

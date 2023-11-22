@@ -2,30 +2,40 @@
 
 import { useSession, signOut } from "next-auth/react"
 import NewChat from "./NewChat"
-import {useCollection} from "react-firebase-hooks/firestore"
-import { collection, orderBy,query } from "firebase/firestore";
-import {db} from "@/firebase"
 import ChatRow from "./ChatRow";
 import ModeSelection from "./ModeSelection";
 import Image from "next/image";
-import {useState} from "react"
+import {useState, useEffect} from "react"
 import { Bars4Icon } from "@heroicons/react/20/solid";
 
 function SideBar() {
   const { data: session } = useSession();
-  // const [chats, loading, error] = useCollection(
-  //   session && query(collection(db, "users", session?.user?.email!, "chats")
-  // , orderBy("createAt", "asc")));
+  const [threads, setThreads] = useState([]);
   const [isOpen, setIsOpen] = useState(false); // State to manage sidebar visibility
-
-  // Function to toggle sidebar
   const toggleSidebar = () => setIsOpen(!isOpen);
 
-  // Classes to control the sidebar appearance and transition
-  const sidebarClasses = isOpen
-    ? "translate-x-0 ease-out"
-    : "-translate-x-full ease-in";
+  useEffect(() => {
+    const fetchThreads = async () => {
+      try {
+        const response = await fetch('/api/getThreads');
+        if (!response.ok) {
+          throw new Error('Failed to fetch threads');
+        }
+        const data = await response.json();
+        console.log(data.data)
+        setThreads(data.data); // Assuming the API returns an object with a threads array
+      } catch (error) {
+        console.error('Error fetching threads:', error);
+      }
+    };
 
+    if (session) {
+      fetchThreads();
+    }
+  }, [session]);
+
+  // Classes to control the sidebar appearance and transition
+  const sidebarClasses = isOpen ? "translate-x-0 ease-out": "-translate-x-full ease-in";
     return (
       <>
       {isOpen && (
@@ -47,16 +57,11 @@ function SideBar() {
               <div className="hidden">
                 <ModeSelection />
               </div>
-              {/* {loading && (
-                <div className="animate-pulse text-center text-white">
-                  <p>Loading Chats...</p>
-                </div>
-              )} */}
-              {/* <div className="flex flex-col space-y-2 my-2">
-                {chats?.docs.map((chat) => (
-                  <ChatRow key={chat.id} id={chat.id} />
+              <div className="flex flex-col space-y-2 my-2">
+                {threads.map((thread) => (
+                  <ChatRow key={thread.id} id={thread.id} />
                 ))}
-              </div> */}
+              </div>
             </div>
             
             {/* Logout Section */}
