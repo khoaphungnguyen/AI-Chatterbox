@@ -1,21 +1,33 @@
 import { PlusIcon } from "@heroicons/react/24/outline"
-import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation";
-import  {addDoc, collection, serverTimestamp} from "firebase/firestore"
-import {db} from "@/firebase"
+interface NewChatProps {
+  onNewThreadCreated: () => void; 
+}
 
-function NewChat() {
+function NewChat({ onNewThreadCreated }: NewChatProps) {
   const router = useRouter()
-  const {data:session} = useSession();
-
-  const createNewChat = async() => {
-    const doc = await addDoc(collection(db, "users", session?.user?.email!, 'chats'),{
-      userId: session?.user?.email!,
-      createAt: serverTimestamp(),
-    })
-
-    router.push(`/chat/${doc.id}`)
-  }
+  const createNewChat = async () => {
+    try {
+      const response = await fetch('/api/createThread', { method: 'POST' });
+      if (!response.ok) {
+        throw new Error(`Failed to create thread: ${response.statusText}`);
+      }
+      const data = await response.json();
+      router.push(`/chat/${data.threadId}`); 
+      if (onNewThreadCreated) {
+        onNewThreadCreated();
+      }
+    } catch (error) {
+      // Narrow down the type to Error
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        // If it's not an Error instance, handle accordingly
+        alert('An unknown error occurred');
+      } 
+    }
+  };
+  
   return (
     <div
     onClick={createNewChat}

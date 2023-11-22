@@ -16,7 +16,7 @@ function Login() {
             />
         </div>
         <button 
-            onClick={() => signIn('google')}
+            onClick={() => signIn()}
             className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full text-xl transition duration-300 ease-in-out transform hover:-translate-y-1 active:translate-y-0 shadow-lg"
         >
             Let's Get Started
