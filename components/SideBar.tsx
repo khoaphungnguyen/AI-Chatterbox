@@ -8,31 +8,54 @@ import Image from "next/image";
 import {useState, useEffect} from "react"
 import { Bars4Icon } from "@heroicons/react/20/solid";
 
+interface Thread {
+  id: string;
+  title: string;
+ 
+}
+
 function SideBar() {
   const { data: session } = useSession();
-  const [threads, setThreads] = useState([]);
+  const [threads, setThreads] = useState<Thread[]>([]);
   const [isOpen, setIsOpen] = useState(false); // State to manage sidebar visibility
   const toggleSidebar = () => setIsOpen(!isOpen);
 
-  useEffect(() => {
-    const fetchThreads = async () => {
-      try {
-        const response = await fetch('/api/getThreads');
-        if (!response.ok) {
-          throw new Error('Failed to fetch threads');
-        }
-        const data = await response.json();
-        console.log(data.data)
-        setThreads(data.data); // Assuming the API returns an object with a threads array
-      } catch (error) {
-        console.error('Error fetching threads:', error);
-      }
-    };
+    // Function to extract initials
+  function getInitials(fullName:string) {
+    const names = fullName.split(' ');
+    const initials = names.map(name => name[0]).join('');
+    return initials;
+  }
 
+  const fetchThreads = async () => {
+    try {
+      const response = await fetch('/api/getThreads');
+      if (!response.ok) {
+        throw new Error('Failed to fetch threads');
+      }
+      const data = await response.json();
+      setThreads(data.data); 
+    } catch (error) {
+      console.error('Error fetching threads:', error);
+    }
+  };
+
+  // Call fetchThreads inside useEffect
+  useEffect(() => {
     if (session) {
       fetchThreads();
     }
   }, [session]);
+
+  // Define a function to be called when a new thread is created
+  const handleNewThread = async () => {
+    await fetchThreads();
+  };
+
+  const handleThreadDeletion = (threadId:string) => {
+    setThreads(currentThreads => currentThreads.filter(thread => thread.id !== threadId));
+  };
+  
 
   // Classes to control the sidebar appearance and transition
   const sidebarClasses = isOpen ? "translate-x-0 ease-out": "-translate-x-full ease-in";
@@ -53,13 +76,16 @@ function SideBar() {
           <div className="flex flex-col h-screen p-4 overflow-y-auto bg-[#20232b]/50  shadow-md">
             {/* Sidebar main content */}
             <div className="flex-1">
-              <NewChat />
+              <NewChat onNewThreadCreated={handleNewThread}/>
               <div className="hidden">
                 <ModeSelection />
               </div>
               <div className="flex flex-col space-y-2 my-2">
-                {threads.map((thread) => (
-                  <ChatRow key={thread.id} id={thread.id} />
+                {threads && threads.map((thread) => (
+                  <div key={thread.id}>
+                       <ChatRow key={thread.id} id={thread.id} title={thread.title} onDelete={() => handleThreadDeletion(thread.id)} />
+
+                  </div>
                 ))}
               </div>
             </div>
@@ -67,13 +93,19 @@ function SideBar() {
             {/* Logout Section */}
             {session && (
               <div className="flex items-center justify-center mx-auto mb-4 p-2 hover:bg-gray-700 rounded-lg transition-all duration-300 cursor-pointer shadow-md" onClick={() => signOut()}>
-                <Image 
-                  src={session.user?.image || ''} // Handle the case when image is undefined
-                  alt="Profile" 
-                  className="h-10 w-10 rounded-full mr-3 border-2 border-red-700"
-                  width={40} // width and height should be consistent with the className styling
-                  height={40}
-                />
+                {session.user?.image ? (
+                  <Image 
+                    src={session.user.image} 
+                    alt="Profile" 
+                    className="h-10 w-10 rounded-full mr-3 border-2 border-red-700"
+                    width={40} 
+                    height={40}
+                  />
+                ) : (
+                  <div className="h-10 w-10 rounded-full mr-3 border-2 border-red-700 flex items-center justify-center bg-gray-700 text-white font-semibold">
+                    {getInitials(session.user?.name ?? "")}
+                  </div>
+                )}
                 <p className="text-red-700 font-semibold tracking-wide uppercase">Log out</p>
               </div>
             )}
@@ -84,7 +116,6 @@ function SideBar() {
         onClick={toggleSidebar}
         className="fixed z-40 top-0 left-0 p-4 text-white"
       >
-        {/* Replace Bars4Icon with the actual icon component you are using */}
         <Bars4Icon className="w-6 h-6" />
       </button>
     )

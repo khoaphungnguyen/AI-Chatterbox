@@ -1,6 +1,6 @@
 import { NextRequest,NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt';
-export async function GET(req: NextRequest, res: NextResponse ){
+export async function POST(req: NextRequest){
     const secret = process.env.NEXTAUTH_SECRET;
     const authToken = await getToken({ req, secret });
     try {
@@ -10,7 +10,7 @@ export async function GET(req: NextRequest, res: NextResponse ){
             'Content-Type': 'application/json',
             'Authorization': authToken ? `Bearer ${authToken.accessToken}` : '',
           },
-          body: JSON.stringify(req.body), // Adjust if you need to send specific data
+          body: JSON.stringify({ "title": "New Chat" }),
         });
 
         if (!response.ok){

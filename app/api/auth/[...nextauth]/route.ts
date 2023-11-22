@@ -2,6 +2,7 @@ import NextAuth from 'next-auth'
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
+import jwt from 'jsonwebtoken';
 
 type DecodedToken = {
   exp?: number;
@@ -50,14 +51,15 @@ export const nextAuthOptions = {
           }),
           credentials: 'include', // Include credentials to handle cookies
         });
-      
 
         const data = await res.json();
+        const decoded = jwt.decode(data.accessToken) as { userId: string, fullName: string };
+
         if (res.ok && data) {
           return {
-            id: 'user-specific-id', // You need to ensure an 'id' is provided
-            name: 'User Name',      // Replace with actual data if available
-            email: credentials?.email,
+            id: decoded && decoded.userId || 'user-specific-id', // You need to ensure an 'id' is provided
+            email : credentials?.email,
+            name: decoded && decoded.fullName || "",      
             accessToken: data.accessToken,
             // refreshToken is handled via HTTP-only cookie
           };

@@ -1,17 +1,33 @@
 import { PlusIcon } from "@heroicons/react/24/outline"
 import { useRouter } from "next/navigation";
+interface NewChatProps {
+  onNewThreadCreated: () => void; 
+}
 
-function NewChat() {
+function NewChat({ onNewThreadCreated }: NewChatProps) {
   const router = useRouter()
-  const createNewChat = async() => {
-    const response  = await fetch('/api/getThread')
-    if (!response.ok) {
-      throw new Error('Failed to create thread');
+  const createNewChat = async () => {
+    try {
+      const response = await fetch('/api/createThread', { method: 'POST' });
+      if (!response.ok) {
+        throw new Error(`Failed to create thread: ${response.statusText}`);
+      }
+      const data = await response.json();
+      router.push(`/chat/${data.threadId}`); 
+      if (onNewThreadCreated) {
+        onNewThreadCreated();
+      }
+    } catch (error) {
+      // Narrow down the type to Error
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        // If it's not an Error instance, handle accordingly
+        alert('An unknown error occurred');
+      } 
     }
-    const data = await response.json();
-    console.log('Thread ID:', data.threadId.id);
-    router.push(`/chat/${data.threadId.id}`)
-  }
+  };
+  
   return (
     <div
     onClick={createNewChat}
