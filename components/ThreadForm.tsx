@@ -2,16 +2,16 @@ import { PaperAirplaneIcon } from "@heroicons/react/20/solid";
 import React from "react";
 import { Session } from "next-auth";
 
-interface ChatFormProps {
+interface ThreadFormProps {
   prompt: string;
   setPrompt: React.Dispatch<React.SetStateAction<string>>;
   sendMessage: (e: React.FormEvent<HTMLFormElement>) => void;
   session: Session | null;
 }
 
-const ChatForm: React.FC<ChatFormProps> = ({ prompt, setPrompt, sendMessage, session }) => (
+const ThreadForm: React.FC<ThreadFormProps> = ({ prompt, setPrompt, sendMessage, session }) => (
   <div className="w-full px-4 py-3"> {/* Slightly reduced horizontal padding */}
-    <form id="chat-form" onSubmit={sendMessage} className="flex items-center justify-between max-w-3xl mx-auto">
+    <form id="thread-form" onSubmit={sendMessage} className="flex items-center justify-between max-w-3xl mx-auto">
         <textarea
       className="flex-grow p-3 text-base text-white placeholder-gray-400 rounded-l-full focus:outline-none bg-gray-700 border border-gray-600 resize-none h-14"
       placeholder="Send your message..."
@@ -20,7 +20,7 @@ const ChatForm: React.FC<ChatFormProps> = ({ prompt, setPrompt, sendMessage, ses
       onKeyDown={(e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
           e.preventDefault(); // This will prevent the default action of the key press
-          document.getElementById('chat-form')?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+          document.getElementById('thread-form')?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
           // The addition of `bubbles: true` makes sure the event bubbles up through the DOM which may be necessary depending on your event listeners
         }
       }}
@@ -38,4 +38,4 @@ const ChatForm: React.FC<ChatFormProps> = ({ prompt, setPrompt, sendMessage, ses
 );
 
 
-export default ChatForm;
+export default ThreadForm;

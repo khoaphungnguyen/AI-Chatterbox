@@ -10,7 +10,7 @@ const messagesEndRef = useRef<null | HTMLDivElement>(null);
 const eventSourceRef = useRef<EventSource | null>(null);
     
     useEffect(() => {
-                const eventSource = new EventSource('/api/chat/stream/bc3bc05d-6add-4e6a-8e32-382433858baa',{
+                const eventSource = new EventSource('/api/chat/stream/ebb24e38-ee74-4661-a103-7504f3004ef4',{
                     withCredentials:true
                 });
                 eventSource.onmessage = (event) => {
@@ -37,7 +37,7 @@ const eventSourceRef = useRef<EventSource | null>(null);
                 const session = await getSession();
                 const token = session?.accessToken
                 // Send question to your API (which forwards it to the Go backend)
-                await fetch('/api/chat/message/bc3bc05d-6add-4e6a-8e32-382433858baa', {
+                await fetch('/api/chat/ask/ebb24e38-ee74-4661-a103-7504f3004ef4', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

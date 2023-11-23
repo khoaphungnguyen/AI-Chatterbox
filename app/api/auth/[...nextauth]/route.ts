@@ -4,25 +4,28 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import jwt from 'jsonwebtoken';
 
-type DecodedToken = {
-  exp?: number;
-  // ... other token properties ...
-};
-
 export const nextAuthOptions = {
   session: {
     strategy: "jwt",
   },
   callbacks: {
+    // async signIn({ user, account, profile, email, credentials }) {
+    //   if (user) {
+    //     const isNewUser = false; 
+    //     if (isNewUser) {
+    //       return '/auth/signup'; 
+    //     }
+    //   }
+    //   return true; // Return true to allow sign-in
+    // },
     async jwt({ token, user, account }) {
       if (user) {
         token.accessToken = user.accessToken;
       }
-      // No need to handle refreshToken here as it's an HTTP-only cookie
       return token;
     },
     async session({ session, token }) {
-      session.accessToken = token.accessToken; 
+      session.accessToken = token.accessToken;
       return session;
     },
   },
@@ -42,7 +45,7 @@ export const nextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const res = await fetch('http://localhost:8000/auth/login', {
+        const res = await fetch(`${process.env.BACKEND_URL}/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

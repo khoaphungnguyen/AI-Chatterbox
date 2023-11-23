@@ -1,12 +1,12 @@
 'use client'
 
 import { useSession, signOut } from "next-auth/react"
-import NewChat from "./NewChat"
-import ChatRow from "./ChatRow";
 import ModeSelection from "./ModeSelection";
 import Image from "next/image";
 import {useState, useEffect} from "react"
 import { Bars4Icon } from "@heroicons/react/20/solid";
+import NewThread from "./NewThread";
+import ThreadRow from "./ThreadRow";
 
 interface Thread {
   id: string;
@@ -76,14 +76,14 @@ function SideBar() {
           <div className="flex flex-col h-screen p-4 overflow-y-auto bg-[#20232b]/50  shadow-md">
             {/* Sidebar main content */}
             <div className="flex-1">
-              <NewChat onNewThreadCreated={handleNewThread}/>
+              <NewThread onNewThreadCreated={handleNewThread}/>
               <div className="hidden">
                 <ModeSelection />
               </div>
               <div className="flex flex-col space-y-2 my-2">
                 {threads && threads.map((thread) => (
                   <div key={thread.id}>
-                       <ChatRow key={thread.id} id={thread.id} title={thread.title} onDelete={() => handleThreadDeletion(thread.id)} />
+                       <ThreadRow key={thread.id} id={thread.id} title={thread.title} onDelete={() => handleThreadDeletion(thread.id)} />
 
                   </div>
                 ))}

@@ -1,11 +1,10 @@
- import SessionProvider from "../components/SessionProvider";
- import { getServerSession } from "next-auth";
+import SessionProvider from "../components/SessionProvider";
+import { getServerSession } from "next-auth";
 import "./globals.css";
 import SideBar from "@/components/SideBar";
-import Login from "@/components/Login"
 import { nextAuthOptions } from "./api/auth/[...nextauth]/route";
 import ClientProvider from "@/components/ClientProvider";
-import { Analytics } from '@vercel/analytics/react';
+import AuthForm from "@/components/AuthForm";
 
 export default async function RootLayout({
   children,
@@ -21,7 +20,7 @@ export default async function RootLayout({
           <body className="h-full">
         <SessionProvider session={session}>
           {!session ? (
-            <Login /> 
+            <AuthForm /> 
           ) : (
             <div className="flex flex-col lg:flex-row min-h-screen">
               
@@ -29,10 +28,9 @@ export default async function RootLayout({
                 <SideBar />
                 <ClientProvider />
                 {children}      
-                <Analytics />
               </div>
             </div>
-           )} 
+         )}
         </SessionProvider> 
       </body>
     </html>

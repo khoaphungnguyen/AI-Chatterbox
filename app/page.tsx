@@ -9,8 +9,9 @@ import { db } from '@/firebase';
 import { serverTimestamp, collection, addDoc } from 'firebase/firestore';
 import Header from '@/components/Header';
 import MainTitle from '@/components/MainTitle';
-import ChatForm from '@/components/ChatForm';
+
 import SuggestionsSection from '@/components/Suggestions';
+import ThreadForm from '@/components/ThreadForm';
 
 export default function Home() {
   const router = useRouter();
@@ -48,7 +49,7 @@ export default function Home() {
   ? JSON.parse(suggestions.answer)
   : null;
 
-  // Function to handle chat creation
+  // Function to handle thread creation
   const sendMessage = async (event:  React.FormEvent<HTMLFormElement> | React.KeyboardEvent<HTMLTextAreaElement>) => {
     event.preventDefault();
     if (!prompt.trim()) return;
@@ -117,7 +118,7 @@ return (
     <Header model={model} />
     <MainTitle />
     <SuggestionsSection suggestions={parsedSuggestions} error={suggestionsError} loading={isLoading} setPrompt={setPrompt}  sendMessage={sendMessage} session={session}/>
-    <ChatForm prompt={prompt} setPrompt={setPrompt} sendMessage={sendMessage} session={session} />
+    <ThreadForm prompt={prompt} setPrompt={setPrompt} sendMessage={sendMessage} session={session} />
   </div>
 );
 }

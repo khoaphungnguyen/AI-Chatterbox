@@ -1,19 +1,20 @@
 import { PlusIcon } from "@heroicons/react/24/outline"
 import { useRouter } from "next/navigation";
-interface NewChatProps {
+interface NewThreadProps {
   onNewThreadCreated: () => void; 
 }
 
-function NewChat({ onNewThreadCreated }: NewChatProps) {
+function NewThread({ onNewThreadCreated }: NewThreadProps) {
   const router = useRouter()
-  const createNewChat = async () => {
+  const createNewThread = async () => {
     try {
       const response = await fetch('/api/createThread', { method: 'POST' });
       if (!response.ok) {
         throw new Error(`Failed to create thread: ${response.statusText}`);
       }
       const data = await response.json();
-      router.push(`/chat/${data.threadId}`); 
+      console.log(data)
+      router.push(`/thread/${data.threadId.id}`); 
       if (onNewThreadCreated) {
         onNewThreadCreated();
       }
@@ -30,13 +31,13 @@ function NewChat({ onNewThreadCreated }: NewChatProps) {
   
   return (
     <div
-    onClick={createNewChat}
+    onClick={createNewThread}
     className="flex items-center space-x-2 border border-gray-700 bg-blue-500/50 hover:bg-blue-600/50 text-white px-4 py-2 rounded-md cursor-pointer transition-colors duration-300 ease-in-out"
   >
     <PlusIcon className="h-6 w-6"/>
-    <h1 className="text-lg font-semibold">New Chat</h1>
+    <h1 className="text-lg font-semibold">New Thread</h1>
   </div>
   )
 }
 
-export default NewChat
+export default NewThread

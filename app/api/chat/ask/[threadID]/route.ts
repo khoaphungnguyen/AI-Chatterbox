@@ -1,16 +1,16 @@
 // pages/api/chat/message/[threadID].ts
 import { NextRequest, NextResponse } from 'next/server';
 import fetch from 'node-fetch';
-
+import { getToken } from 'next-auth/jwt';
 export async function POST(req: NextRequest) {
   // Extract the threadID from the URL
   const threadID = req.nextUrl.pathname.split('/').pop();
 
-  // Extract the token from the request headers
-  const token = req.headers.get('authorization')?.split(' ')[1]; // Assumes "Bearer <token>"
+  const secret = process.env.NEXTAUTH_SECRET;
+  const token = await getToken({ req, secret });
 
   // Construct the Go server URL
-  const goServerUrl = `http://localhost:8000/protected/chat/post/${threadID}`;
+  const goServerUrl = `http://localhost:8000/protected/chat/ask/${threadID}`;
 
   // Forward the request to the Go backend
   const backendResponse = await fetch(goServerUrl, {
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     headers: {
       'Content-Type': 'application/json',
       // Pass the token in the Authorization header
-      'Authorization': token ? `Bearer ${token}` : '',
+      'Authorization': token ? `Bearer ${token.accessToken}` : '',
     },
     body: await req.text(),
   });
