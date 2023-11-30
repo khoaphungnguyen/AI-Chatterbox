@@ -13,7 +13,6 @@ function NewThread({ onNewThreadCreated }: NewThreadProps) {
         throw new Error(`Failed to create thread: ${response.statusText}`);
       }
       const data = await response.json();
-      console.log(data)
       router.push(`/thread/${data.threadId.id}`); 
       if (onNewThreadCreated) {
         onNewThreadCreated();
