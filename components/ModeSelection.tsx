@@ -3,6 +3,12 @@
 import useSWR from "swr";
 import Select from 'react-select';
 
+// Define a type for your option
+type OptionType = {
+  value: string;
+  label: string;
+};
+
 function ModeSelection() {
   // Use SWR for managing the selected model state if needed
   const { data: model, mutate: setModel} = useSWR('model', {
@@ -16,8 +22,11 @@ function ModeSelection() {
   ];
 
   // Handler for when a new model is selected
-  const handleModelChange = (selectedOption) => {
-    setModel(selectedOption.value);
+  const handleModelChange = (selectedOption: OptionType | null) => {
+    if (selectedOption !== null) {
+      setModel(selectedOption.value);
+      // Perform any additional actions when the model is changed
+    }
     // Perform any additional actions when the model is changed
   };
 

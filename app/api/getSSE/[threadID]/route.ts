@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     if (!response.body) {
       return new Response("Failed to connect to Go server", { status: 500 });
     }
-    return new NextResponse(response.body, {
+    return new NextResponse(response.body as unknown as ReadableStream<Uint8Array>, {
       headers: {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',

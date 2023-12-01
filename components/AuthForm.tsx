@@ -13,7 +13,7 @@ export default function AuthForm() {
     const [confirmPassword, setConfirmPassword] = useState('');
 
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>)=> {
         e.preventDefault();
         if (isSignUp) {
             if (password !== confirmPassword) {

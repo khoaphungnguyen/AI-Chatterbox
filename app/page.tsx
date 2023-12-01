@@ -18,13 +18,13 @@ export default function Home() {
   const { data: model } = useSWR('model', { fallbackData: 'gpt-3.5-turbo-1106' });
 
     // Updated fetcher function
-    const fetcher = async (url) => {
+    const fetcher = async (url: string) => {
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ model:"gpt-3.5-turbo-1106" }),
+        body: JSON.stringify({ model: "gpt-3.5-turbo-1106" }),
       });
       if (!response.ok) {
         const errorText = await response.text();
