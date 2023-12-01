@@ -19,7 +19,6 @@ function Thread({ id }: ThreadProps) {
   
           eventSource.onmessage = (event) => {
               const newMessage = JSON.parse(event.data);
-              console.log(newMessage);
               addMessage(newMessage);
           };
   

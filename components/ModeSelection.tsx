@@ -1,32 +1,40 @@
 'use client'
 
-import useSWR from "swr"
+import useSWR from "swr";
 import Select from 'react-select';
 
-const fetchModels = () => fetch('/api/getEngines').then((res) => res.json())
-
 function ModeSelection() {
-  const { data: models, isLoading} = useSWR('models', fetchModels);
-  const { data: model, mutate: setModel} = useSWR('model',{
-    fallbackData: 'gpt-3.5-turbo-0613'
-  })
+  // Use SWR for managing the selected model state if needed
+  const { data: model, mutate: setModel} = useSWR('model', {
+    fallbackData: 'gpt-3.5-turbo-1106' // Set the default or fallback model
+  });
+
+  // Directly define the models you want to use as options
+  const modelOptions = [
+    { value: 'gpt-3.5-turbo-1106', label: 'GPT-3.5' },
+    { value: 'gpt-4-1106-preview', label: 'GPT-4' },
+  ];
+
+  // Handler for when a new model is selected
+  const handleModelChange = (selectedOption) => {
+    setModel(selectedOption.value);
+    // Perform any additional actions when the model is changed
+  };
+
   return (
     <div>
       <Select 
         className="mt-2"
-        options={models?.modelOptions}
-        defaultValue={model}
-        placeholder={model}
-        isSearchable
-        isLoading={isLoading}
+        options={modelOptions}
+        defaultValue={modelOptions.find(opt => opt.value === model)} // Set the default value based on the current model
+        placeholder="Select a model"
+        isSearchable={false} // If you only have two options, search might not be necessary
         menuPosition="fixed"
-        classNames={{
-          control: (state) => state.isFocused ? 'border-red-600' : 'border-gray-300',
-        }}
-        onChange={(e) => setModel(e.value)}
+        classNamePrefix="react-select"
+        onChange={handleModelChange}
       />
     </div>
   )
 }
 
-export default ModeSelection
+export default ModeSelection;

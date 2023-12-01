@@ -77,7 +77,7 @@ function SideBar() {
             {/* Sidebar main content */}
             <div className="flex-1">
               <NewThread onNewThreadCreated={handleNewThread}/>
-              <div className="hidden">
+              <div className="">
                 <ModeSelection />
               </div>
               <div className="flex flex-col space-y-2 my-2">

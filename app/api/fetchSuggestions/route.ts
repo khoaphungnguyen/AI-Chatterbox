@@ -3,9 +3,6 @@ import fetch from 'node-fetch';
 import { getToken } from 'next-auth/jwt';
 
 export async function POST(req: NextRequest) {
-  // Extract the threadID from the URL
-  const threadID = req.nextUrl.pathname.split('/').pop();
-
   // Retrieve the secret used for NextAuth
   const secret = process.env.NEXTAUTH_SECRET;
 
@@ -17,7 +14,6 @@ export async function POST(req: NextRequest) {
     if (!model) {
       return NextResponse.json({ error: "Please provide model!" }, {status: 400,});
     }
-    console.log(model)
     // Forward the request to the backend server
     const response = await fetch(`${process.env.BACKEND_URL}/protected/suggestions`, {
       method: 'POST',  

@@ -15,16 +15,16 @@ export default function Home() {
   const router = useRouter();
   const [prompt, setPrompt] = useState('');
   const { data: session } = useSession();
-  const { data: model } = useSWR('model', { fallbackData: 'gpt-3.5-turbo-0613' });
+  const { data: model } = useSWR('model', { fallbackData: 'gpt-3.5-turbo-1106' });
 
     // Updated fetcher function
-    const fetcher = async (url, model) => {
+    const fetcher = async (url) => {
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ model }),
+        body: JSON.stringify({ model:"gpt-3.5-turbo-1106" }),
       });
       if (!response.ok) {
         const errorText = await response.text();
@@ -35,13 +35,13 @@ export default function Home() {
   
     // Updated useSWR hook
     const { data: suggestions, error: suggestionsError, isLoading } = useSWR(['/api/fetchSuggestions', model], 
-      () => fetcher('/api/fetchSuggestions', model), {
+      () => fetcher('/api/fetchSuggestions'), {
         shouldRetryOnError: false,
         revalidateOnFocus: false,
     });
   // Parse suggestions and handle errors
   const parsedSuggestions = suggestions ? JSON.parse(suggestions) : [];
-
+  //const parsedSuggestions = suggestions ? (suggestions) : [];
   const createNewThread = async () => {
     try {
       const response = await fetch('/api/createThread', { method: 'POST' });

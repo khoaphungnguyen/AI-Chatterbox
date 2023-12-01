@@ -19,7 +19,6 @@ export async function GET(req: NextRequest) {
     if (!response.body) {
       return new Response("Failed to connect to Go server", { status: 500 });
     }
-    console.log(response)
     return new NextResponse(response.body, {
       headers: {
         'Content-Type': 'text/event-stream',

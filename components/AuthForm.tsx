@@ -28,7 +28,6 @@ export default function AuthForm() {
             });
             const data = await res.json();
             if (res.ok) {
-                console.log('Sign Up Successful', data);
                 // Redirect or sign in the user after successful sign-up
                 signIn('credentials', { email, password });
             } else {
