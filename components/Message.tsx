@@ -1,49 +1,40 @@
+import { ChatMessage } from "@/typings";
 import { useSession } from "next-auth/react";
 import Image from 'next/image';
 
+
 type Props = {
-  message: {
-    Content: string;
-    Role: string;
-  };
+  message: ChatMessage;
 };
+
 
 function Message({ message }: Props) {
   const { data: session } = useSession();
-  const { Content, Role } = message;
-  const isSmartChat = Role === "assistant";
+  const { content, role } = message; // Adjust to lower camel case to match the struct
+  const isSmartChat = role === "assistant";
   
-  // If Content or Role is undefined, return null or a default message
-  if (typeof Content === 'undefined' || typeof Role === 'undefined') {
+  if (!content || !role) {
     return <div>Message is missing content or role.</div>;
-}
-
-  // Define the assistant's image URL (update this to your assistant's image URL)
-  const assistantImageURL = "/path-to-assistant-image.jpg";
-
+  }
+  
   const messageClasses = `py-5 text-white ${isSmartChat ? "bg-gray-700" : ""}`;
 
-  // Function to extract initials
-  function getInitials(fullName: string) {
-    const names = fullName.split(' ');
-    const initials = names.map(name => name[0]).join('');
-    return initials;
+  function getInitials(fullName: string = "") {
+    return fullName.split(' ').map(name => name[0]).join('');
   }
 
   return (
     <div className={messageClasses}>
       <div className="flex items-center space-x-5 px-5 max-w-2xl mx-auto">
         {isSmartChat ? (
-          // Display the assistant's image
           <Image 
-          src="/icon.png" 
+            src="/icon.png" 
             alt="Assistant" 
             className="h-10 w-10 rounded-full mr-3"
             width={40} 
             height={40}
           />
         ) : session?.user?.image ? (
-          // Display the user's image
           <Image 
             src={session.user.image} 
             alt="Profile" 
@@ -52,12 +43,11 @@ function Message({ message }: Props) {
             height={40}
           />
         ) : (
-          // Display initials if no image is available
           <div className="h-10 w-10 rounded-full mr-3 border-2 border-blue-700 flex items-center justify-center bg-gray-700 text-white font-semibold">
             {getInitials(session?.user?.name ?? "")}
           </div>
         )}
-        <p className="pt-1 text">{Content}</p>
+        <p className="pt-1 text">{content}</p>
       </div>
     </div>
   );

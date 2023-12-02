@@ -2,25 +2,11 @@ import { Session } from 'next-auth';
 
 import 'next-auth';
 
-interface Message{
-    "content": string,
-    "createAt": admin.firestore.Timestamp;
-    "user": {
-        "_id": string;
-        "name": string;
-        "avatar": string;
-        "role": string;
-    };
+interface ChatMessage {
+  content: string;
+  role: string;
+  createdAt?: string; 
 }
-
-interface ChatCompletionMessageParam{
-    "role": string;
-    "content": string;
-  };
-
-
-type FetcherParams = [string, string];
-
 
 declare module 'next-auth' {
   /**

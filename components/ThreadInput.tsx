@@ -1,11 +1,11 @@
 'use client'
 
-import React, { useState, FormEvent } from 'react';
-import { useChat } from "@/app/context/ChatContext";
+import React, { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
-import useSWR from 'swr';
 import ThreadForm from './ThreadForm';
+import useSWR, { mutate } from 'swr';
+import { ChatMessage } from "@/typings";
 
 type ThreadInputProps = {
     id: string;
@@ -14,33 +14,39 @@ type ThreadInputProps = {
 function ThreadInput({ id }: ThreadInputProps) {
     const [prompt, setPrompt] = useState('');
     const { data: session } = useSession();
-    const { addMessage } = useChat();
-    
-    const { data: model } = useSWR('model', {
-        fallbackData: 'gpt-3.5-turbo-1106'
-    });
+    const { data: messages, mutate: mutateMessages } = useSWR<ChatMessage[]>(`/api/getMessages/${id}`);
 
-    const sendMessage = async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (!prompt) return;
+    const sendMessage = async (message: string) => {
+        if (!message.trim()) return;
 
-        const notification = toast.loading("SmartChat is thinking...");
+        // Optimistically update the messages list
+        const optimisticMessage: ChatMessage = {
+            content: message,
+            role: 'user',
+            createdAt: new Date().toISOString(), // or some other placeholder value
+          };// Adjust fields as needed
+        mutateMessages([...(messages || []), optimisticMessage], false);
+        setPrompt('');
+
+        const notification = toast.loading("Sending message...");
 
         try {
-            await fetch(`/api/askQuestions/${id}`, {
+            const response = await fetch(`/api/askQuestions/${id}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    message: prompt.trim(),
-                    model,
-                }),
+                body: JSON.stringify({ message, model: 'gpt-3.5-turbo-1106' }),
             });
 
-            toast.success("SmartChat has responded", { id: notification });
-            addMessage({ Content: prompt, Role: "user" });
-            setPrompt('');
+            if (response.ok) {
+                // Revalidate the messages list after the server response
+                mutate(`/api/getMessages/${id}`);
+                toast.success("Message sent", { id: notification });
+            } else {
+                // Handle errors here
+                toast.error("Failed to send message.", { id: notification });
+            }
         } catch (error) {
             toast.error("An error occurred.", { id: notification });
             console.error("Error sending message:", error);
@@ -48,11 +54,8 @@ function ThreadInput({ id }: ThreadInputProps) {
     };
 
     return (
-        <div className=''>
-            <ThreadForm session={session} prompt={prompt} setPrompt={setPrompt} sendMessage={sendMessage} />
-            {/* <div className="hidden">
-                <ModeSelection />
-            </div> */}
+        <div>
+            <ThreadForm session={session} prompt={prompt} setPrompt={setPrompt} sendMessage={() => sendMessage(prompt)} />
         </div>
     );
 }

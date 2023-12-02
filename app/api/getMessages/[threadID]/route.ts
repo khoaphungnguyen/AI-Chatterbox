@@ -14,11 +14,11 @@ export async function GET(req: NextRequest){
         });
 
         if (!response.ok){
-            throw new Error(`Error from Creating new thread: ${response.status}`)
+            throw new Error(`Error from getting message: ${response.status}`)
         }
 
         const data = await response.json();
-        return NextResponse.json({data: data }, {status: 200});
+        return NextResponse.json(data , {status: 200});
     } catch (error){
         console.error('Error retrival from the backend server:', error);
         return new Response("Server error", { status: 500 });
