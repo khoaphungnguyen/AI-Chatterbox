@@ -17,18 +17,21 @@ function ThreadInput({ id }: ThreadInputProps) {
     const { data: messages, mutate: mutateMessages } = useSWR<ChatMessage[]>(`/api/getMessages/${id}`);
 
     const sendMessage = async (message: string) => {
+        // Clear messages for a new question
+        //setMessages([]); 
         if (!message.trim()) return;
 
         // Optimistically update the messages list
         const optimisticMessage: ChatMessage = {
+            id: 'temp-id-' + Date.now(), // Temporary ID; 
             content: message,
             role: 'user',
-            createdAt: new Date().toISOString(), // or some other placeholder value
-          };// Adjust fields as needed
+            createdAt: new Date().toISOString(), // Temporary createdAt
+          };
         mutateMessages([...(messages || []), optimisticMessage], false);
         setPrompt('');
 
-        const notification = toast.loading("Sending message...");
+        const notification = toast.loading("SmartChat is thinking...");
 
         try {
             const response = await fetch(`/api/askQuestions/${id}`, {
@@ -41,8 +44,8 @@ function ThreadInput({ id }: ThreadInputProps) {
 
             if (response.ok) {
                 // Revalidate the messages list after the server response
-                mutate(`/api/getMessages/${id}`);
-                toast.success("Message sent", { id: notification });
+               // mutate(`/api/getMessages/${id}`);
+                toast.success("Done!!!", { id: notification });
             } else {
                 // Handle errors here
                 toast.error("Failed to send message.", { id: notification });

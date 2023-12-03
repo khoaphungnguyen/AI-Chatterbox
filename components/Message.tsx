@@ -1,27 +1,27 @@
+import React from 'react';
 import { ChatMessage } from "@/typings";
 import { useSession } from "next-auth/react";
 import Image from 'next/image';
 
-
 type Props = {
   message: ChatMessage;
+  isStreaming?: boolean;
 };
 
-
-function Message({ message }: Props) {
+function Message({ message, isStreaming = false }: Props) {
   const { data: session } = useSession();
-  const { content, role } = message; // Adjust to lower camel case to match the struct
+  const { content, role } = message;
   const isSmartChat = role === "assistant";
-  
-  if (!content || !role) {
-    return <div>Message is missing content or role.</div>;
-  }
-  
-  const messageClasses = `py-5 text-white ${isSmartChat ? "bg-gray-700" : ""}`;
 
+  const messageClasses = `py-5 text-white ${isSmartChat ? "bg-gray-700" : ""}`;
+  
+  // Function to get initials from a full name
   function getInitials(fullName: string = "") {
     return fullName.split(' ').map(name => name[0]).join('');
   }
+
+  // Determine the display content based on whether the message is being streamed
+  const displayContent = isStreaming ? (content + "...") : content; // Append "..." if streaming
 
   return (
     <div className={messageClasses}>
@@ -47,7 +47,7 @@ function Message({ message }: Props) {
             {getInitials(session?.user?.name ?? "")}
           </div>
         )}
-        <p className="pt-1 text">{content}</p>
+        <p className="pt-1 text">{displayContent}</p> {/* Render the display content */}
       </div>
     </div>
   );

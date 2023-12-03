@@ -3,6 +3,7 @@ import { Session } from 'next-auth';
 import 'next-auth';
 
 interface ChatMessage {
+  id: string;
   content: string;
   role: string;
   createdAt?: string; 

@@ -13,67 +13,86 @@ type ThreadProps = {
 const fetcher = (url: string) => fetch(url)
   .then(res => res.json())
   .then(data => {
-    // Ensure that data is an array
     if (Array.isArray(data)) {
       return data;
     } else {
-      // Log and throw an error if data is not an array
       throw new Error('Data is not an array');
     }
   });
 
 function Thread({ id }: ThreadProps) {
-    const { data: session } = useSession();
-    const { data: initialMessages } = useSWR<ChatMessage[]>(`/api/getMessages/${id}`, fetcher);
-    const [messages, setMessages] = useState<ChatMessage[]>([]); 
+  const { data: session } = useSession();
+  const { data: initialMessages } = useSWR<ChatMessage[]>(`/api/getMessages/${id}`, fetcher);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [streamedMessage, setStreamedMessage] = useState('');
 
-    useEffect(() => {
-        if (initialMessages) {
-            setMessages(initialMessages);
+  useEffect(() => {
+    setMessages(initialMessages || []);
+  }, [initialMessages]);
+
+  useEffect(() => {
+    
+    if (session) {
+      const eventSource = new EventSource(`/api/getSSE/${id}`);
+      let accumulatedStream = ''; // Accumulator for the streamed data
+
+      eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log("Received data: ", data); // Debugging log
+
+        if (data.role === 'assistant') {
+          // If the message is part of a stream, accumulate it
+          accumulatedStream += data.content;
+
+          // Identify the end of a message. This is an example and may need to be adjusted.
+          if (data.content.endsWith('\n')) { // Assuming '\n' is the end of a message
+            setMessages(prevMessages => [...prevMessages, {
+              id: `assistant-${Date.now()}`,
+              content: accumulatedStream,
+              role: 'assistant',
+              // ... (any other necessary fields)
+            }]);
+            accumulatedStream = ''; // Clear the accumulator
+          }
+        } else {
+          // For user messages, add them immediately
+          setMessages(prevMessages => [...prevMessages, data]);
         }
-    }, [initialMessages]);
+      };
 
-    useEffect(() => {
-        if (session) {
-            const eventSource = new EventSource(`/api/getSSE/${id}`);
+      eventSource.onerror = (error: Event) => {
+        console.error('EventSource failed:', error);
+        eventSource.close();
+      };
 
-            eventSource.onmessage = (event) => {
-                try {
-                    const newMessage: ChatMessage = JSON.parse(event.data);
-                    console.log("SSE message", newMessage)
-                    setMessages(prevMessages => {
-                        // This check prevents the same message from being added twice
-                        // const messageExists = prevMessages.some(msg => msg.id === newMessage.id);
-                        return [...prevMessages, newMessage];
-                    });
-                } catch (e) {
-                    console.error('Error parsing SSE data:', e);
-                }
-            };
-
-            eventSource.onerror = (error: Event) => {
-                console.error('EventSource failed:', error);
-                eventSource.close();
-            };
-
-            // Clean up the event source when the component unmounts
-            return () => {
-                eventSource.close();
-            };
-        }
-    }, [id, session]);
-
-    if (!Array.isArray(messages)) {
-        return <div>Messages are not available or not in the expected format.</div>;
+      return () => {
+        eventSource.close();
+      };
     }
+  }, [id, session, streamedMessage]);
 
-    return (
-        <div className='flex-1 overflow-y-scroll overflow-x-hidden'>
-            {messages.map((message, index) => (
-                <Message key={index} message={message} />
-            ))}
-        </div>
-    );
+  return (
+    <div className='flex-1 overflow-y-scroll overflow-x-hidden'>
+      {messages.map((message, index) => (
+        <Message
+          key={message.id || index}
+          message={message}
+        />
+      ))}
+      {/* If a message is being streamed, display it */}
+      {streamedMessage && (
+        <Message
+          key="streamed-message"
+          message={{
+            id: 'streamed-message',
+            content: streamedMessage,
+            role: 'assistant',
+            createdAt: new Date().toISOString()
+          }}
+        />
+      )}
+    </div>
+  );
 }
 
 export default Thread;
