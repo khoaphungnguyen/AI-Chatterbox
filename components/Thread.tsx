@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import Message from './Message';
 import { useSession } from 'next-auth/react';
 import useSWR from 'swr';
 import { ChatMessage } from "@/typings";
+import useChatStore from "@/app/store/threadStore"; // Adjust the import path
 
 type ThreadProps = {
   id: string;
@@ -22,54 +23,70 @@ const fetcher = (url: string) => fetch(url)
 
 function Thread({ id }: ThreadProps) {
   const { data: session } = useSession();
-  const { data: initialMessages } = useSWR<ChatMessage[]>(`/api/getMessages/${id}`, fetcher);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [streamedMessage, setStreamedMessage] = useState('');
+  const { data: initialMessages } = useSWR<ChatMessage[]>(`/api/getMessages/${id}`, fetcher,{
+    revalidateOnFocus:false
+  });
+
+  const { messages, addMessage, isStreaming, setIsStreaming, error, reset } = useChatStore();
+
+   // Reset the store when the thread ID changes
+   useEffect(() => {
+    reset();
+  }, [id, reset]);
+
 
   useEffect(() => {
-    setMessages(initialMessages || []);
-  }, [initialMessages]);
+    if (initialMessages) {
+      // Here, you might want to replace existing messages in the store
+      // or handle the merging of messages differently depending on your needs
+      initialMessages.forEach(message => addMessage(message));
+    }
+  }, [initialMessages, addMessage]);
 
   useEffect(() => {
-    
     if (session) {
       const eventSource = new EventSource(`/api/getSSE/${id}`);
-      let accumulatedStream = ''; // Accumulator for the streamed data
+      let accumulatedStream = '';
 
       eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        console.log("Received data: ", data); // Debugging log
-
+      
+        // Check if the stream is starting or ending based on an empty content string.
         if (data.role === 'assistant') {
-          // If the message is part of a stream, accumulate it
-          accumulatedStream += data.content;
-
-          // Identify the end of a message. This is an example and may need to be adjusted.
-          if (data.content.endsWith('\n')) { // Assuming '\n' is the end of a message
-            setMessages(prevMessages => [...prevMessages, {
+          if (data.content === '' && accumulatedStream === '') {
+            // Start of a new message stream.
+            setIsStreaming(true); // Set streaming status to true when the stream starts.
+          } else if (data.content === '' && accumulatedStream !== '') {
+            // End of the current message stream.
+            setIsStreaming(false); // Set streaming status to false when the stream ends.
+            addMessage({
               id: `assistant-${Date.now()}`,
               content: accumulatedStream,
               role: 'assistant',
-              // ... (any other necessary fields)
-            }]);
-            accumulatedStream = ''; // Clear the accumulator
+              // ... other necessary fields like createdAt
+            });
+            accumulatedStream = ''; // Clear the accumulator after adding the message.
+          } else {
+            // Accumulate the message content.
+            accumulatedStream += data.content;
           }
-        } else {
-          // For user messages, add them immediately
-          setMessages(prevMessages => [...prevMessages, data]);
         }
       };
+      
 
-      eventSource.onerror = (error: Event) => {
-        console.error('EventSource failed:', error);
+      eventSource.onerror = (errorEvent: Event) => {
+        console.error('EventSource failed:', errorEvent);
         eventSource.close();
+        // Update error state in zustand store
+         useChatStore.setState({ error: 'Stream Error' });
       };
 
       return () => {
         eventSource.close();
-      };
+        setIsStreaming(false);
+      };;
     }
-  }, [id, session, streamedMessage]);
+  }, [id, session, addMessage,setIsStreaming]);
 
   return (
     <div className='flex-1 overflow-y-scroll overflow-x-hidden'>
@@ -79,18 +96,10 @@ function Thread({ id }: ThreadProps) {
           message={message}
         />
       ))}
-      {/* If a message is being streamed, display it */}
-      {streamedMessage && (
-        <Message
-          key="streamed-message"
-          message={{
-            id: 'streamed-message',
-            content: streamedMessage,
-            role: 'assistant',
-            createdAt: new Date().toISOString()
-          }}
-        />
-      )}
+      {/* Display an error message if needed */}
+      {error && <div>Error: {error}</div>}
+      {/* Display a loading or streaming indicator based on isStreaming */}
+      {isStreaming && <div>Streaming messages...</div>}
     </div>
   );
 }

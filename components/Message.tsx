@@ -20,6 +20,8 @@ function Message({ message, isStreaming = false }: Props) {
     return fullName.split(' ').map(name => name[0]).join('');
   }
 
+  //console.log("message",message, "steaming", isStreaming)
+
   // Determine the display content based on whether the message is being streamed
   const displayContent = isStreaming ? (content + "...") : content; // Append "..." if streaming
 
