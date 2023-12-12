@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import ThreadForm from './ThreadForm';
-import useSWR, { mutate } from 'swr';
+import useSWR from 'swr';
 import { ChatMessage } from "@/typings";
 
 type ThreadInputProps = {
@@ -17,8 +17,6 @@ function ThreadInput({ id }: ThreadInputProps) {
     const { data: messages, mutate: mutateMessages } = useSWR<ChatMessage[]>(`/api/getMessages/${id}`);
 
     const sendMessage = async (message: string) => {
-        // Clear messages for a new question
-        //setMessages([]); 
         if (!message.trim()) return;
 
         // Optimistically update the messages list
@@ -43,8 +41,6 @@ function ThreadInput({ id }: ThreadInputProps) {
             });
 
             if (response.ok) {
-                // Revalidate the messages list after the server response
-               // mutate(`/api/getMessages/${id}`);
                 toast.success("Done!!!", { id: notification });
             } else {
                 // Handle errors here

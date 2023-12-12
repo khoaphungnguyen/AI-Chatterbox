@@ -41,7 +41,7 @@ function Thread({ id }: ThreadProps) {
       // or handle the merging of messages differently depending on your needs
       initialMessages.forEach(message => addMessage(message));
     }
-  }, [initialMessages, addMessage]);
+  }, [initialMessages]);
 
   useEffect(() => {
     if (session) {
@@ -52,7 +52,7 @@ function Thread({ id }: ThreadProps) {
         const data = JSON.parse(event.data);
       
         // Check if the stream is starting or ending based on an empty content string.
-        if (data.role === 'assistant') {
+     
           if (data.content === '' && accumulatedStream === '') {
             // Start of a new message stream.
             setIsStreaming(true); // Set streaming status to true when the stream starts.
@@ -70,7 +70,6 @@ function Thread({ id }: ThreadProps) {
             // Accumulate the message content.
             accumulatedStream += data.content;
           }
-        }
       };
       
 
