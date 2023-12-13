@@ -4,59 +4,64 @@ import React, { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import ThreadForm from './ThreadForm';
-import useSWR from 'swr';
+import useChatStore from "@/app/store/threadStore";
 import { ChatMessage } from "@/typings";
+import useSWR from 'swr';
 
 type ThreadInputProps = {
-    id: string;
+  id: string;
 };
 
 function ThreadInput({ id }: ThreadInputProps) {
-    const [prompt, setPrompt] = useState('');
-    const { data: session } = useSession();
-    const { data: messages, mutate: mutateMessages } = useSWR<ChatMessage[]>(`/api/getMessages/${id}`);
+  const [prompt, setPrompt] = useState('');
+  const { data: session } = useSession();
+  const addMessage = useChatStore(state => state.addMessage);
+  const { data: model } = useSWR('model', { fallbackData: 'gpt-3.5-turbo-1106' });
 
-    const sendMessage = async (message: string) => {
-        if (!message.trim()) return;
+  const sendMessage = async (message: string) => {
+    if (!message.trim()) return;
 
-        // Optimistically update the messages list
-        const optimisticMessage: ChatMessage = {
-            id: 'temp-id-' + Date.now(), // Temporary ID; 
-            content: message,
-            role: 'user',
-            createdAt: new Date().toISOString(), // Temporary createdAt
-          };
-        mutateMessages([...(messages || []), optimisticMessage], false);
-        setPrompt('');
-
-        const notification = toast.loading("SmartChat is thinking...");
-
-        try {
-            const response = await fetch(`/api/askQuestions/${id}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ message, model: 'gpt-3.5-turbo-1106' }),
-            });
-
-            if (response.ok) {
-                toast.success("Done!!!", { id: notification });
-            } else {
-                // Handle errors here
-                toast.error("Failed to send message.", { id: notification });
-            }
-        } catch (error) {
-            toast.error("An error occurred.", { id: notification });
-            console.error("Error sending message:", error);
-        }
+    const userMessage: ChatMessage = {
+      id: `user-${Date.now()}`,
+      content: message,
+      role: 'user',
+      createdAt: new Date().toISOString(),
     };
 
-    return (
-        <div>
-            <ThreadForm session={session} prompt={prompt} setPrompt={setPrompt} sendMessage={() => sendMessage(prompt)} />
-        </div>
-    );
+    addMessage(userMessage);
+    setPrompt('');
+
+    const notification = toast.loading("Sending message...");
+
+    try {
+      const response = await fetch(`/api/sendMessage/${id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message, model: model }),
+      });
+
+      if (response.ok) {
+        // If you need to handle the response, do so here
+        toast.success("Message sent successfully!", { id: notification });
+      } else {
+        toast.error("Failed to send message.", { id: notification });
+      }
+    } catch (error) {
+        if (error instanceof Error) {
+          toast.error(`An error occurred: ${error.message}`, { id: notification });
+          console.error("Error sending message:", error);
+        } else {
+          toast.error("An error occurred.", { id: notification });
+          console.error("Error sending message:", error);
+        }
+    } 
+  };
+
+  return (
+    <ThreadForm session={session} prompt={prompt} setPrompt={setPrompt} sendMessage={() => sendMessage(prompt)} />
+  );
 }
 
-export default ThreadInput;
+export default ThreadInput

@@ -1,6 +1,4 @@
 'use client'
-// ThreadForm Component
-
 import { PaperAirplaneIcon } from "@heroicons/react/20/solid";
 import React from "react";
 import { Session } from "next-auth";

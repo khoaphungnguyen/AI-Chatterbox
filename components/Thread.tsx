@@ -1,106 +1,115 @@
 'use client'
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Message from './Message';
-import { useSession } from 'next-auth/react';
 import useSWR from 'swr';
-import { ChatMessage } from "@/typings";
-import useChatStore from "@/app/store/threadStore"; // Adjust the import path
+import useChatStore from '@/app/store/threadStore';
+import { ChatMessage } from '@/typings';
 
 type ThreadProps = {
   id: string;
 };
 
-const fetcher = (url: string) => fetch(url)
-  .then(res => res.json())
-  .then(data => {
-    if (Array.isArray(data)) {
-      return data;
-    } else {
-      throw new Error('Data is not an array');
-    }
-  });
+const fetcher = async (url: string): Promise<ChatMessage[]> => {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error('Network response was not ok');
+  }
+  const data = await res.json();
+  if (!Array.isArray(data)) {
+    throw new Error('Data is not an array');
+  }
+  return data;
+};
 
-function Thread({ id }: ThreadProps) {
-  const { data: session } = useSession();
-  const { data: initialMessages } = useSWR<ChatMessage[]>(`/api/getMessages/${id}`, fetcher,{
-    revalidateOnFocus:false
+const Thread: React.FC<ThreadProps> = ({ id }) => {
+  const { data: initialMessages } = useSWR<ChatMessage[]>(`/api/getMessages/${id}`, fetcher, {
+    revalidateOnFocus: false,
+    shouldRetryOnError: false,
   });
 
   const { messages, addMessage, isStreaming, setIsStreaming, error, reset } = useChatStore();
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
-   // Reset the store when the thread ID changes
-   useEffect(() => {
-    reset();
-  }, [id, reset]);
-
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  };
 
   useEffect(() => {
+    reset();
+
     if (initialMessages) {
-      // Here, you might want to replace existing messages in the store
-      // or handle the merging of messages differently depending on your needs
-      initialMessages.forEach(message => addMessage(message));
+      initialMessages.forEach((message) => {
+        if (!messages.some((m) => m.id === message.id)) {
+          addMessage(message);
+        }
+      });
     }
   }, [initialMessages]);
 
   useEffect(() => {
-    if (session) {
+    scrollToBottom();
+  }, [messages]);
+
+  useEffect(() => {
+    const setupSSE = () => {
       const eventSource = new EventSource(`/api/getSSE/${id}`);
-      let accumulatedStream = '';
+      let currentStreamId: string | null = null;
 
       eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
-      
-        // Check if the stream is starting or ending based on an empty content string.
-     
-          if (data.content === '' && accumulatedStream === '') {
-            // Start of a new message stream.
-            setIsStreaming(true); // Set streaming status to true when the stream starts.
-          } else if (data.content === '' && accumulatedStream !== '') {
-            // End of the current message stream.
-            setIsStreaming(false); // Set streaming status to false when the stream ends.
-            addMessage({
-              id: `assistant-${Date.now()}`,
-              content: accumulatedStream,
-              role: 'assistant',
-              // ... other necessary fields like createdAt
-            });
-            accumulatedStream = ''; // Clear the accumulator after adding the message.
-          } else {
-            // Accumulate the message content.
-            accumulatedStream += data.content;
-          }
-      };
-      
 
-      eventSource.onerror = (errorEvent: Event) => {
-        console.error('EventSource failed:', errorEvent);
+        if (data.content === '' && currentStreamId) {
+          setIsStreaming(false);
+          currentStreamId = null;
+        } else if (!currentStreamId) {
+          setIsStreaming(true);
+          currentStreamId = `stream-${Date.now()}`;
+        }
+
+        if (data.content !== '') {
+          addMessage({
+            id: `chunk-${currentStreamId ?? 'unknown'}`,
+            content: data.content,
+            streamId: currentStreamId ?? 'unknown',
+            role: 'assistant',
+            createdAt: new Date().toISOString(),
+          });
+        }
+      };
+
+      eventSource.onerror = (errorEvent) => {
+        console.error(`EventSource failed for thread ID ${id}:`, errorEvent);
         eventSource.close();
-        // Update error state in zustand store
-         useChatStore.setState({ error: 'Stream Error' });
+        setIsStreaming(false);
+        useChatStore.setState({ error: 'Stream Error' });
       };
 
       return () => {
+        console.log(`Cleaning up SSE connection for thread ID: ${id}`);
         eventSource.close();
-        setIsStreaming(false);
-      };;
-    }
-  }, [id, session, addMessage,setIsStreaming]);
+      };
+    };
+
+    console.log(`Setting up SSE connection for thread ID: ${id}`);
+    const cleanupSSE = setupSSE();
+
+    return () => {
+      console.log(`Cleaning up thread: ${id}`);
+      cleanupSSE();
+    };
+  }, [id]);
 
   return (
-    <div className='flex-1 overflow-y-scroll overflow-x-hidden'>
+    <div ref={chatContainerRef} className="chat-container flex-1 overflow-y-scroll overflow-x-hidden">
       {messages.map((message, index) => (
-        <Message
-          key={message.id || index}
-          message={message}
-        />
+        <Message key={message.id || index.toString()} message={message} />
       ))}
-      {/* Display an error message if needed */}
       {error && <div>Error: {error}</div>}
-      {/* Display a loading or streaming indicator based on isStreaming */}
-      {isStreaming && <div>Streaming messages...</div>}
     </div>
   );
-}
+};
 
 export default Thread;

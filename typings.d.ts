@@ -6,8 +6,11 @@ interface ChatMessage {
   id: string;
   content: string;
   role: string;
-  createdAt?: string; 
+  createdAt?: string;
+  streamId?: string;
+  isStreaming?: boolean;
 }
+
 
 declare module 'next-auth' {
   /**
