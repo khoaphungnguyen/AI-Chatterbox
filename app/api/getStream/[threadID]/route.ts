@@ -27,7 +27,16 @@ export async function GET(req: NextRequest) {
       }
     });
   } catch (error) {
-    console.error('Error connecting to Go server:', error);
-    return new Response("Server error", { status: 500 });
+    if (error instanceof Error) {
+      if (error.message.includes('ECONNRESET')) {
+        // Handle ECONNRESET error
+        console.error('Connection was reset. Please try again.');
+      } else {
+        console.error('Streaming Error:', error);
+      }
+    } else {
+      console.error('An unknown error occurred:', error);
+    }
+    return new Response("Streaming Error", { status: 500 });
   }
 }

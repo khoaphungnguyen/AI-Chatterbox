@@ -51,16 +51,16 @@ const Thread: React.FC<ThreadProps> = ({ id }) => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, id]);
 
   useEffect(() => {
     const setupSSE = () => {
-      const eventSource = new EventSource(`/api/getSSE/${id}`);
+      const eventSource = new EventSource(`/api/getStream/${id}`);
       let currentStreamId: string | null = null;
 
       eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
-
+        console.log('SSE data:', data);
         if (data.content === '' && currentStreamId) {
           setIsStreaming(false);
           currentStreamId = null;

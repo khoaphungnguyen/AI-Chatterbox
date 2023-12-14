@@ -9,7 +9,7 @@ type Props = {
 };
 
 function Message({ message, isStreaming = false }: Props) {
-  const { data: session } = useSession();
+  const { data: session } = useSession(); 
   const { content, role, createdAt, streamId } = message;
   const isSmartChat = role === "assistant";
 
