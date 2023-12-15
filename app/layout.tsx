@@ -12,6 +12,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const session = await getServerSession(nextAuthOptions); 
+  const isSessionExpired = session && new Date() > new Date(session.expires);
+
   return (
     <html lang="en" className="h-full bg-gray-900">
           <head>
@@ -19,7 +21,7 @@ export default async function RootLayout({
           </head>
           <body className="h-full">
         <SessionProvider session={session}>
-          {!session ? (
+          {!session || isSessionExpired ? (
             <AuthForm /> 
           ) : (
             <div className="flex flex-col lg:flex-row min-h-screen">

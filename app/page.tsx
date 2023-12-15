@@ -30,7 +30,7 @@ export default function Home() {
         const errorText = await response.text();
         throw new Error(`Error ${response.status}: ${errorText}`);
       }
-      return response.json(); // This line parses the JSON response body
+      return response.json(); 
     };
   
     // Updated useSWR hook
@@ -41,7 +41,6 @@ export default function Home() {
     });
   // Parse suggestions and handle errors
   const parsedSuggestions = suggestions ? JSON.parse(suggestions) : [];
-  //const parsedSuggestions = suggestions ? (suggestions) : [];
   const createNewThread = async () => {
     try {
       const response = await fetch('/api/createThread', { method: 'POST' });
@@ -68,11 +67,6 @@ export default function Home() {
 
     const input = prompt.trim();
     setPrompt("");
-
-    if (!session || !session.user || !session.user.email) {
-      toast.error("You need to be logged in.");
-      return;
-    }
   
     try {
 

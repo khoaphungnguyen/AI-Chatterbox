@@ -1,28 +1,47 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { ChatMessage } from "@/typings";
 import { useSession } from "next-auth/react";
 import Image from 'next/image';
+import { toast } from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
 
 type Props = {
   message: ChatMessage;
 };
 
+function getContentString(content: any): string {
+  if (typeof content === 'string') {
+    return content;
+  } else if (Array.isArray(content)) {
+    return content.join(' ');
+  } else if (typeof content === 'object') {
+    return JSON.stringify(content);
+  } else {
+    return '';
+  }
+}
+
 function Message({ message }: Props) {
   const { data: session } = useSession(); 
   const { content, role, createdAt } = message;
   const isSmartChat = role === "assistant";
 
-  // Function to get initials from a full name
+  const timeString = useMemo(() => createdAt ? new Date(createdAt).toLocaleTimeString() : 'N/A', [createdAt]);
+  const contentString = useMemo(() => getContentString(content), [content]);
+
   function getInitials(fullName: string = "") {
     return fullName.split(' ').map(name => name[0]).join('');
   }
 
-  // Format createdAt date safely
-  const timeString = createdAt ? new Date(createdAt).toLocaleTimeString() : 'N/A';
+  const copyText = useCallback(() => {
+    if (isSmartChat) {
+      navigator.clipboard.writeText(contentString);
+      toast.success('Text copied to clipboard!');
+    }
+  }, [isSmartChat, contentString])
 
   return (
-    <div className={`flex items-start space-x-3 max-w-2xl mx-auto my-2 ${isSmartChat ? "flex-row-reverse" : "flex-row"}`}>
+    <div className="flex items-start space-x-3 max-w-2xl mx-auto my-2">
       {isSmartChat ? (
         <Image 
           src="/icon.png" 
@@ -34,7 +53,7 @@ function Message({ message }: Props) {
       ) : session?.user?.image ? (
         <Image 
           src={session.user.image} 
-          alt="Profile" 
+          alt={`Profile picture of ${session.user.name}`} // More descriptive alt text
           className="h-8 w-8 rounded-full border-2 border-gray-500"
           width={32} 
           height={32}
@@ -44,19 +63,16 @@ function Message({ message }: Props) {
           {getInitials(session?.user?.name ?? "")}
         </div>
       )}
-      <div className={`py-3 px-4 rounded-lg my-2 text-white ${isSmartChat ? "" : "bg-gray-800"}`}>
+       <div className="py-2 px-3 rounded-lg my-2" onClick={copyText}>
         <div className="flex justify-between items-center">
-          <p className="text-xs text-gray-300">
-            {/* Render the user's name */}
+          <p className={`text-sm ${isSmartChat ? 'text-blue-300' : 'text-gray-400'}`}>
             {isSmartChat ? "Assistant" : session?.user?.name}
           </p>
-          {/* Render the time string */}
-          <p className="text-xs text-gray-300">{timeString}</p>
         </div>
-        <ReactMarkdown className="text-sm mt-1 prose prose-sm">
-          {/* Render the content */}
-          {content}
+        <ReactMarkdown className={`text-lg mt-1 prose prose-sm ${isSmartChat ? 'text-blue-400' : 'text-white/90'}`}>
+          {contentString}
         </ReactMarkdown>
+        <p className="text-sm text-gray-400 text-right">{timeString}</p>
       </div>
     </div>
   );
