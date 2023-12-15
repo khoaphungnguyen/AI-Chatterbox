@@ -1,43 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { ChatMessage } from "@/typings";
 import { useSession } from "next-auth/react";
 import Image from 'next/image';
+import ReactMarkdown from 'react-markdown';
 
 type Props = {
   message: ChatMessage;
-  isStreaming?: boolean;
 };
 
-function Message({ message, isStreaming = false }: Props) {
+function Message({ message }: Props) {
   const { data: session } = useSession(); 
-  const { content, role, createdAt, streamId } = message;
+  const { content, role, createdAt } = message;
   const isSmartChat = role === "assistant";
-
-  // State to manage the expanded state of the message
-  const [isExpanded, setIsExpanded] = useState(false);
-  const toggleExpanded = () => setIsExpanded(!isExpanded);
-
-  // State to accumulate streaming content
-  const [streamingContent, setStreamingContent] = useState('');
-
-  // Determine if the message should be truncated
-  const MAX_LENGTH = 300;
-  const shouldTruncate = content.length > MAX_LENGTH && !isExpanded;
-
-  // Effect to handle accumulating streaming content
-  useEffect(() => {
-    if (isStreaming) {
-      setStreamingContent(prev => prev + content);
-    } else {
-      setStreamingContent('');
-    }
-  }, [content, isStreaming]);
-
-  // Determine the display content based on whether the message is streaming
-  const displayContent = isStreaming ? streamingContent : content;
-
-  // Determine message style based on whether it's streaming
-  const messageClasses = `py-5 text-white ${isSmartChat ? "bg-gray-700" : ""} ${isStreaming ? "opacity-75" : ""}`;
 
   // Function to get initials from a full name
   function getInitials(fullName: string = "") {
@@ -48,41 +22,41 @@ function Message({ message, isStreaming = false }: Props) {
   const timeString = createdAt ? new Date(createdAt).toLocaleTimeString() : 'N/A';
 
   return (
-    <div className={messageClasses}>
-      <div className="flex items-center space-x-5 px-5 max-w-2xl mx-auto">
-        {isSmartChat ? (
-          <Image 
-            src="/icon.png" 
-            alt="Assistant" 
-            className="h-10 w-10 rounded-full mr-3"
-            width={40} 
-            height={40}
-          />
-        ) : session?.user?.image ? (
-          <Image 
-            src={session.user.image} 
-            alt="Profile" 
-            className="h-10 w-10 rounded-full mr-3 border-2 border-blue-700"
-            width={40} 
-            height={40}
-          />
-        ) : (
-          <div className="h-10 w-10 rounded-full mr-3 border-2 border-blue-700 flex items-center justify-center bg-gray-700 text-white font-semibold">
-            {getInitials(session?.user?.name ?? "")}
-          </div>
-        )}
-         <p className="pt-1 text">
-          {/* Render the display content based on the streaming state */}
-          {shouldTruncate && !isStreaming ? content.substring(0, MAX_LENGTH) + "..." : displayContent}
-          {/* Toggle for expanding truncated content */}
-          {shouldTruncate && !isStreaming && (
-            <button onClick={toggleExpanded} className="text-blue-500 ml-2">
-              {isExpanded ? "Read less" : "Read more"}
-            </button>
-          )}
-        </p>
-        {/* Render the time string */}
-        <p className="text-xs text-gray-500">{timeString}</p>
+    <div className={`flex items-start space-x-3 max-w-2xl mx-auto my-2 ${isSmartChat ? "flex-row-reverse" : "flex-row"}`}>
+      {isSmartChat ? (
+        <Image 
+          src="/icon.png" 
+          alt="Assistant" 
+          className="h-8 w-8 rounded-full"
+          width={32} 
+          height={32}
+        />
+      ) : session?.user?.image ? (
+        <Image 
+          src={session.user.image} 
+          alt="Profile" 
+          className="h-8 w-8 rounded-full border-2 border-gray-500"
+          width={32} 
+          height={32}
+        />
+      ) : (
+        <div className="h-8 w-8 rounded-full border-2 border-gray-500 flex items-center justify-center bg-gray-500 text-white font-semibold">
+          {getInitials(session?.user?.name ?? "")}
+        </div>
+      )}
+      <div className={`py-3 px-4 rounded-lg my-2 text-white ${isSmartChat ? "" : "bg-gray-800"}`}>
+        <div className="flex justify-between items-center">
+          <p className="text-xs text-gray-300">
+            {/* Render the user's name */}
+            {isSmartChat ? "Assistant" : session?.user?.name}
+          </p>
+          {/* Render the time string */}
+          <p className="text-xs text-gray-300">{timeString}</p>
+        </div>
+        <ReactMarkdown className="text-sm mt-1 prose prose-sm">
+          {/* Render the content */}
+          {content}
+        </ReactMarkdown>
       </div>
     </div>
   );

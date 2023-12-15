@@ -28,7 +28,7 @@ const Thread: React.FC<ThreadProps> = ({ id }) => {
     shouldRetryOnError: false,
   });
 
-  const { messages, addMessage, isStreaming, setIsStreaming, error, reset } = useChatStore();
+  const { messages, addMessage, updateMessage, setIsStreaming, error, reset } = useChatStore();
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -36,6 +36,10 @@ const Thread: React.FC<ThreadProps> = ({ id }) => {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   useEffect(() => {
     reset();
@@ -47,65 +51,59 @@ const Thread: React.FC<ThreadProps> = ({ id }) => {
         }
       });
     }
-  }, [initialMessages]);
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, id]);
-
-  useEffect(() => {
+    let eventSource: EventSource | null = null; // Define eventSource in the outer scope
+  
     const setupSSE = () => {
-      const eventSource = new EventSource(`/api/getStream/${id}`);
+      eventSource = new EventSource(`/api/getStream/${id}`);
       let currentStreamId: string | null = null;
-
+  
       eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        console.log('SSE data:', data);
+      
         if (data.content === '' && currentStreamId) {
           setIsStreaming(false);
           currentStreamId = null;
         } else if (!currentStreamId) {
           setIsStreaming(true);
           currentStreamId = `stream-${Date.now()}`;
-        }
-
-        if (data.content !== '') {
           addMessage({
-            id: `chunk-${currentStreamId ?? 'unknown'}`,
+            id: `chunk-${currentStreamId}`,
             content: data.content,
-            streamId: currentStreamId ?? 'unknown',
+            streamId: currentStreamId,
             role: 'assistant',
             createdAt: new Date().toISOString(),
           });
+        } else {
+          updateMessage(`chunk-${currentStreamId}`, prevContent => prevContent + data.content);
         }
       };
-
-      eventSource.onerror = (errorEvent) => {
-        console.error(`EventSource failed for thread ID ${id}:`, errorEvent);
-        eventSource.close();
+  
+      eventSource.onerror = () => {
+        if (eventSource) {
+          eventSource.close();
+        }
         setIsStreaming(false);
         useChatStore.setState({ error: 'Stream Error' });
       };
-
-      return () => {
-        console.log(`Cleaning up SSE connection for thread ID: ${id}`);
+    };
+  
+    const cleanupSSE = () => {
+      if (eventSource) {
         eventSource.close();
-      };
+      }
     };
-
-    console.log(`Setting up SSE connection for thread ID: ${id}`);
-    const cleanupSSE = setupSSE();
-
-    return () => {
-      console.log(`Cleaning up thread: ${id}`);
-      cleanupSSE();
-    };
-  }, [id]);
+  
+    setupSSE();
+  
+    return cleanupSSE;
+  }, [id, initialMessages]);
+  
 
   return (
     <div ref={chatContainerRef} className="chat-container flex-1 overflow-y-scroll overflow-x-hidden">
       {messages.map((message, index) => (
-        <Message key={message.id || index.toString()} message={message} />
+        <Message key={message.id || index.toString()} message={message}/>
       ))}
       {error && <div>Error: {error}</div>}
     </div>

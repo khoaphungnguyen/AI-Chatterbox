@@ -9,6 +9,7 @@ interface ChatState {
   reset: () => void;
   addMessage: (message: ChatMessage) => void;
   setIsStreamingForMessage: (streamId: string, isStreaming: boolean) => void;
+  updateMessage: (id: string, updateContent: (prevContent: string) => string) => void;
 }
 
 const useChatStore = create<ChatState>((set) => ({
@@ -28,19 +29,17 @@ const useChatStore = create<ChatState>((set) => ({
         ...updatedMessages[index],
         isStreaming,
       };
-      return { messages: updatedMessages }; // This return should directly return an object.
+      return { messages: updatedMessages };
     } else {
-      return {}; // If no message is found, return an empty object.
+      return {};
     }
   }),
 
   addMessage: (message) => set((state) => {
-    // If it's a user message or does not have a streamId, add as a new message
     if (message.role === 'user' || !message.streamId) {
       return { messages: [...state.messages, message] };
     }
 
-    // If it's an assistant message, update or add as necessary
     const existingIndex = state.messages.findIndex(m => m.streamId === message.streamId);
     if (existingIndex !== -1) {
       const updatedMessages = [...state.messages];
@@ -51,6 +50,13 @@ const useChatStore = create<ChatState>((set) => ({
       return { messages: updatedMessages };
     }
     return { messages: [...state.messages, message] };
+  }),
+
+  updateMessage: (id, updateContent) => set(prevState => {
+    const messageIndex = prevState.messages.findIndex(message => message.id === id);
+    if (messageIndex === -1) return prevState;
+    const updatedMessage = { ...prevState.messages[messageIndex], content: updateContent(prevState.messages[messageIndex].content) };
+    return { ...prevState, messages: [...prevState.messages.slice(0, messageIndex), updatedMessage, ...prevState.messages.slice(messageIndex + 1)] };
   }),
 }));
 
