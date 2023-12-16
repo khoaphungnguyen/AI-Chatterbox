@@ -99,12 +99,13 @@ const Message: React.FC<Props> = ({ message }) => {
         </CopyToClipboard>
         }
         <div className="flex justify-between items-center">
-        <p className={`text-lg font-semibold ${isSmartChat ? 'text-blue-600' : 'text-white'}`}>
+        <p className={`text-lg font-semibold ${isSmartChat ? 'text-white' : 'text-blue-500'}`}>
         {isSmartChat ? "Assistant" : session?.user?.name}
           </p>
         </div>
+
         <ReactMarkdown 
-          className={`prose prose-blue list-decimal list-inside ${isSmartChat ? 'text-white' : 'text-white'}`} 
+          className={`prose prose-sky ${isSmartChat ? 'text-white/70' : 'text-white/80'}`} 
           remarkPlugins={[gfm]}
           components={renderers}
         >
