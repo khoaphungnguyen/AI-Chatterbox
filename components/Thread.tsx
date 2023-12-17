@@ -5,6 +5,7 @@ import Message from './Message';
 import useSWR from 'swr';
 import useChatStore from '@/app/store/threadStore';
 import { ChatMessage } from '@/typings';
+import { ArchiveBoxArrowDownIcon, ArrowDownCircleIcon } from '@heroicons/react/20/solid';
 
 type ThreadProps = {
   id: string;
@@ -62,10 +63,8 @@ const Thread: React.FC<ThreadProps> = ({ id }) => {
         const data = JSON.parse(event.data);
       
         if (data.content === '' && currentStreamId) {
-          setIsStreaming(false);
           currentStreamId = null;
         } else if (!currentStreamId) {
-          setIsStreaming(true);
           currentStreamId = `stream-${Date.now()}`;
           addMessage({
             id: `chunk-${currentStreamId}`,
@@ -83,7 +82,6 @@ const Thread: React.FC<ThreadProps> = ({ id }) => {
         if (eventSource) {
           eventSource.close();
         }
-        setIsStreaming(false);
         useChatStore.setState({ error: 'Stream Error' });
       };
     };
@@ -101,12 +99,26 @@ const Thread: React.FC<ThreadProps> = ({ id }) => {
   
 
   return (
-    <div ref={chatContainerRef} className="chat-container flex-1 overflow-y-scroll overflow-x-hidden">
-      {messages.map((message, index) => (
-        <Message key={message.id || index.toString()} message={message}/>
-      ))}
-      {error && <div>Error: {error}</div>}
+    <div ref={chatContainerRef} className="flex-1 mt-10 overflow-y-scroll overflow-x-hidden">
+  {messages.length > 0 ? (
+    messages.map((message) => (  
+        <Message key={`message-${message.id}`} message={message}/>
+    ))
+  ) : (
+    <>
+    <p className='mt-20 text-center text-white text-2xl'>
+      Ready to start? Enter your prompt below!
+    </p>
+    <ArrowDownCircleIcon className='h-10 w-10 mx-auto mt-5 text-white animate-bounce transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110' />
+  </>
+  )}
+  {error && (
+    <div>
+      <p>Error: {error}</p>
+      <p>Please try again later or contact support if the problem persists.</p>
     </div>
+  )}
+</div>
   );
 };
 

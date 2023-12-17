@@ -17,10 +17,10 @@ function ThreadInput({ id }: ThreadInputProps) {
   const { data: session } = useSession();
   const addMessage = useChatStore(state => state.addMessage);
   const { data: model } = useSWR('model', { fallbackData: 'gpt-3.5-turbo-1106' });
-
+  const { setIsStreaming } = useChatStore();
   const sendMessage = async (message: string) => {
     if (!message.trim()) return;
-
+    setIsStreaming(true);
     const userMessage: ChatMessage = {
       id: `user-${Date.now()}`,
       content: message,
@@ -31,8 +31,6 @@ function ThreadInput({ id }: ThreadInputProps) {
     addMessage(userMessage);
     setPrompt('');
 
-    const notification = toast.loading("Sending message...");
-
     try {
       const response = await fetch(`/api/sendMessage/${id}`, {
         method: 'POST',
@@ -42,25 +40,24 @@ function ThreadInput({ id }: ThreadInputProps) {
         body: JSON.stringify({ message, model: model }),
       });
 
-      if (response.ok) {
-        // If you need to handle the response, do so here
-        toast.success("Message sent successfully!", { id: notification });
-      } else {
-        toast.error("Failed to send message.", { id: notification });
+      if (!response.ok) { 
+        toast.error("Failed to send message.");
       }
     } catch (error) {
-        if (error instanceof Error) {
-          toast.error(`An error occurred: ${error.message}`, { id: notification });
-          console.error("Error sending message:", error);
-        } else {
-          toast.error("An error occurred.", { id: notification });
-          console.error("Error sending message:", error);
-        }
-    } 
+      if (error instanceof Error) {
+        toast.error(`An error occurred: ${error.message}`);
+        console.error("Error sending message:", error);
+      } else {
+        toast.error("An error occurred.");
+        console.error("Error sending message:", error);
+      } 
+    }  finally{
+      setIsStreaming(false);
+    }
   };
 
   return (
-    <ThreadForm session={session} prompt={prompt} setPrompt={setPrompt} sendMessage={() => sendMessage(prompt)} />
+    <ThreadForm session={session} prompt={prompt} setPrompt={setPrompt} sendMessage={() => sendMessage(prompt)}  />
   );
 }
 

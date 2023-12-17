@@ -8,7 +8,6 @@ interface ChatState {
   setIsStreaming: (streaming: boolean) => void;
   reset: () => void;
   addMessage: (message: ChatMessage) => void;
-  setIsStreamingForMessage: (streamId: string, isStreaming: boolean) => void;
   updateMessage: (id: string, updateContent: (prevContent: string) => string) => void;
 }
 
@@ -20,20 +19,6 @@ const useChatStore = create<ChatState>((set) => ({
   setIsStreaming: (streaming) => set(() => ({ isStreaming: streaming })),
 
   reset: () => set(() => ({ messages: [], isStreaming: false, error: null })),
-
-  setIsStreamingForMessage: (streamId: string, isStreaming: boolean) => set(state => {
-    const index = state.messages.findIndex(m => m.streamId === streamId);
-    if (index !== -1) {
-      const updatedMessages = [...state.messages];
-      updatedMessages[index] = {
-        ...updatedMessages[index],
-        isStreaming,
-      };
-      return { messages: updatedMessages };
-    } else {
-      return {};
-    }
-  }),
 
   addMessage: (message) => set((state) => {
     if (message.role === 'user' || !message.streamId) {
