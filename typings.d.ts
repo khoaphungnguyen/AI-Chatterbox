@@ -19,6 +19,7 @@ declare module 'next-auth' {
   interface User {
     accessToken?: string;
     refreshToken?: string;
+    expiresIn?: number;
   }
 
   // Extend the Session type
@@ -26,6 +27,7 @@ declare module 'next-auth' {
     user: User; // Make sure the user in Session is of the extended User type
     accessToken?: string;
     refreshToken?: string;
+    
   }
 }
 
@@ -36,5 +38,6 @@ declare module 'next-auth/jwt' {
   interface JWT {
     accessToken?: string;
     refreshToken?: string;
+    expiresIn?: number;
   }
 }
