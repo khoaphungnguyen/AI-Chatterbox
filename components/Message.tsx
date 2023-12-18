@@ -132,4 +132,4 @@ const Message: React.FC<Props> = ({ message }) => {
     </div>
     );
 }
-export default Message;
+export default Message;  

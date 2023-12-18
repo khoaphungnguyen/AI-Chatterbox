@@ -32,7 +32,7 @@ const ThreadForm: React.FC<ThreadFormProps> = ({ prompt, setPrompt, sendMessage,
       <TextareaAutosize
         minRows={1} 
         maxRows={6} 
-        className="w-full p-5 pr-16 text-base lg:text-lg text-white placeholder-gray-400 rounded-lg bg-gray-700 focus:outline-none border border-gray-700 resize-none"
+        className="w-full p-5 pr-16 text-base lg:text-lg text-white placeholder-gray-400 rounded-xl bg-gray-700 focus:outline-none border border-gray-700 resize-none"
         placeholder="Send your message..."
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}

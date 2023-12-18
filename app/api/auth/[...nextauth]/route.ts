@@ -7,11 +7,52 @@
   export const nextAuthOptions = {
     session: {
       strategy: "jwt",
+      maxAge: 2 * 60, 
     },
     callbacks: {
-      async jwt({ token, user }) {
+      async jwt({ token, user}) {
         if (user) {
+          token.id = user.id;
+          token.name = user.name;
           token.accessToken = user.accessToken;
+          token.refreshToken = user.refreshToken;
+        }
+        if (token?.accessToken) {
+          const decodedToken = jwt.decode(token.accessToken);
+          const currentTime = Date.now() / 1000;
+  
+         // console.log("refreshToken", token.refreshToken)
+          if (!decodedToken || decodedToken.exp < currentTime) {
+            // If the token is expired, refresh it
+            
+            const refreshToken = async () => {
+              const res =  await fetch(`${process.env.BACKEND_URL}/auth/refresh`, {
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                method: "POST",
+                body: JSON.stringify({
+                  refreshToken: token.refreshToken,
+                }),
+              });
+            
+              const data = await res.json();
+              if (res.ok && data) {
+                return data.accessToken;
+              }
+            
+              // Return null if new access token could not be retrieved
+              return null;
+            }
+            const newAccessToken = await refreshToken();
+            console.log("newAccessToken", newAccessToken)
+            if (newAccessToken) {
+              token.accessToken = newAccessToken;
+            } 
+            else {
+              return Promise.resolve(null);
+            }
+          }
         }
         return token;
       },
@@ -26,7 +67,7 @@
         clientSecret: process.env.GOOGLE_CLIENT_SECRET?? ""
       }),
       CredentialsProvider({
-        name: "Sign in",
+        name: "Credentials",
         credentials: {
           email: {
             label: "Email",
@@ -46,16 +87,15 @@
             credentials: 'include', // Include credentials to handle cookies
           });
 
-          const data = await res.json();
-          const decoded = jwt.decode(data.accessToken) as { userId: string, fullName: string };
-
-          if (res.ok && data) {
+          const user = await res.json();
+          
+          if (res.ok && user) {
             return {
-              id: decoded && decoded.userId || 'user-specific-id', // You need to ensure an 'id' is provided
-              email : credentials?.email,
-              name: decoded && decoded.fullName || "",      
-              accessToken: data.accessToken,
-              // refreshToken is handled via HTTP-only cookie
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              accessToken: user.accessToken,
+              refreshToken: user.refreshToken,
             };
           }
         
@@ -64,6 +104,7 @@
         },
       }),
     ],
+
     secret: process.env.NEXTAUTH_SECRET,
   } satisfies NextAuthOptions
 
