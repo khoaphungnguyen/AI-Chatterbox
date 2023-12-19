@@ -1,12 +1,13 @@
 'use client'
 
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import ModeSelection from "./ModeSelection";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { Bars4Icon } from "@heroicons/react/20/solid";
 import NewThread from "./NewThread";
 import ThreadRow from "./ThreadRow";
+import { signOut } from '@/app/auth';
 
 interface Thread {
   id: string;
