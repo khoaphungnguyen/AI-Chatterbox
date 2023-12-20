@@ -1,8 +1,7 @@
 import { NextRequest,NextResponse } from 'next/server'
+import { auth } from '@/auth';
 export async function POST(req: NextRequest){
-    
-    const secret = process.env.NEXTAUTH_SECRET;
-    const { authToken } = (await req.json()) ?? {}
+    const authToken = await auth();
     try {
         const response = await fetch(`${process.env.BACKEND_URL}/protected/thread`, {
           method: 'POST',

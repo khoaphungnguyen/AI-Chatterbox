@@ -1,18 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fetch from 'node-fetch';
-import { getToken } from 'next-auth/jwt';
+import { auth } from '@/auth';
 
 export async function GET(req: NextRequest) {
 
   const threadID = req.nextUrl.pathname.split('/').pop();
-  const secret = process.env.NEXTAUTH_SECRET;
-  const token = await getToken({ req, secret });
+  const authToken = await auth();
 
   try {
     const response = await fetch(`${process.env.BACKEND_URL}/protected/chat/stream/${threadID}`, {
       headers: {
         'Accept': 'text/event-stream',
-        'Authorization': token ? `Bearer ${token.accessToken}` : '',
+        'Authorization': authToken ? `Bearer ${authToken.accessToken}` : '',
       },
     });
 

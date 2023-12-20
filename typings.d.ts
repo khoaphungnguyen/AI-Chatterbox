@@ -1,6 +1,4 @@
-import { Session } from 'next-auth';
-
-import 'next-auth';
+import NextAuth, { DefaultSession } from "next-auth"
 
 interface ChatMessage {
   id: string;
@@ -24,10 +22,11 @@ declare module 'next-auth' {
 
   // Extend the Session type
   interface Session {
-    user: User; // Make sure the user in Session is of the extended User type
+    user: {
+      id: string
+    } & DefaultSession["user"] // Make sure the user in Session is of the extended User type
     accessToken?: string;
     refreshToken?: string;
-    
   }
 }
 

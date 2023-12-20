@@ -1,16 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fetch from 'node-fetch';
-import { getToken } from 'next-auth/jwt';
+import { auth } from '@/auth';
 
 export async function POST(req: NextRequest) {
   // Extract the threadID from the URL
   const threadID = req.nextUrl.pathname.split('/').pop();
 
-  // Retrieve the secret used for NextAuth
-  const secret = process.env.NEXTAUTH_SECRET;
+  const authToken = await auth();
 
-  // Attempt to get the authentication token
-  const authToken = await getToken({ req, secret });
 
   try {
     // Forward the request to the backend server

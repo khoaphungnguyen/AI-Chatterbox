@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     if (!model) {
       return NextResponse.json({ error: "Please provide model!" }, {status: 400,});
     }
-    console.log("session",session)
+    //console.log("session",session)
     // Forward the request to the backend server
     const response = await fetch(`${process.env.BACKEND_URL}/protected/suggestions`, {
       method: 'POST',  

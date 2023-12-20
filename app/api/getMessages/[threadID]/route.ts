@@ -1,15 +1,14 @@
 import { NextRequest,NextResponse } from 'next/server'
-import { getToken } from 'next-auth/jwt';
+import {auth} from  "@/auth"
 export async function GET(req: NextRequest){
-    const secret = process.env.NEXTAUTH_SECRET;
-    const authToken = await getToken({ req, secret });
+    const session = await auth();
     const threadID = req.nextUrl.pathname.split('/').pop();
     try {
         const response = await fetch(`${process.env.BACKEND_URL}/protected/threads/${threadID}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': authToken ? `Bearer ${authToken.accessToken}` : '',
+            'Authorization': session ? `Bearer ${session.accessToken}` : '',
           },
         });
 

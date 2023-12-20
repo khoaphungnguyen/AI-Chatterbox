@@ -1,9 +1,7 @@
 import { NextRequest } from 'next/server';
-import { getToken } from 'next-auth/jwt';
-
+import {auth} from "@/auth"
 export async function DELETE(req: NextRequest) {
-  const secret = process.env.NEXTAUTH_SECRET;
-  const authToken = await getToken({ req, secret });
+  const authToken = await auth();;
 
   // Extract the threadID from the URL. You might need to adjust this depending on your URL structure.
   const urlParts = req.nextUrl.pathname.split('/');
