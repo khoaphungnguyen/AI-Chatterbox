@@ -30,6 +30,10 @@ export async function signup(
       const fullName = formData.get('fullName');
       const email = formData.get('email');
       const password = formData.get('password');
+      const confirnPassword = formData.get('confirmPassword');
+      if (password !== confirnPassword) {
+        return 'Passwords do not match.';
+      }
       const res = await fetch(`${process.env.BACKEND_URL}/auth/signup`,{
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -44,6 +48,7 @@ export async function signup(
       } else {
         console.error('Sign Up Failed', data);
         // Handle errors such as email already in use
+        return data.error;
       }
     } catch (error) {
       if (error instanceof AuthError) {

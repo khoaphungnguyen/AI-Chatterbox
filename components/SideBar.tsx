@@ -9,12 +9,13 @@ import NewThread from "./NewThread";
 import ThreadRow from "./ThreadRow";
 import { signOut } from '@/auth';
 import { getSession } from "@/app/getSession";
+import { PowerIcon } from '@heroicons/react/24/outline';
 interface Thread {
   id: string;
   title: string;
 }
 
-function SideBar() {
+export default function SideNav() {
   const [threads, setThreads] = useState<Thread[]>([]);
   const [isOpen, setIsOpen] = useState(false); // State to manage sidebar visibility
   const toggleSidebar = () => setIsOpen(!isOpen);
@@ -58,7 +59,6 @@ function SideBar() {
 
   return (
     <>
- 
       {isOpen && (
         <div
           className="fixed inset-0 z-20 transition-opacity bg-black opacity-50"
@@ -95,27 +95,43 @@ function SideBar() {
 
             {/* Logout Section */}
             { (
-              <div
-                className="flex items-center justify-center mx-auto mb-4 p-2 hover:bg-gray-700 rounded-lg transition-all duration-300 cursor-pointer shadow-md"
-                onClick={() => signOut()}
+              <div>
+              <div className="hidden h-auto w-full grow rounded-md bg-gray-50 md:block"></div>
+              <form
+                action={async () => {
+                  await signOut();
+                }}
               >
-                {/* {session?.user.image ? (
-                  <Image
-                    src={session.user.image}
-                    alt="Profile"
-                    className="h-10 w-10 rounded-full mr-3 border-2 border-red-700"
-                    width={40}
-                    height={40}
-                  />
-                ) : (
-                  <div className="h-10 w-10 rounded-full mr-3 border-2 border-red-700 flex items-center justify-center bg-gray-700 text-white font-semibold">
-                    {getInitials(session.user?.name ?? "")}
-                  </div>
-                )} */}
-                <p className="text-red-700 font-semibold tracking-wide uppercase">
-                  Log out
-                </p>
+                <button className="flex h-[48px] grow items-center justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-sky-100 hover:text-blue-600 md:flex-none md:justify-start md:p-2 md:px-3">
+                  <PowerIcon className="w-6" />
+                  <div className="hidden md:block">Sign Out</div>
+                </button>
+              </form>
+  
               </div>
+              // <div
+              //   className="flex items-center justify-center mx-auto mb-4 p-2 hover:bg-gray-700 rounded-lg transition-all duration-300 cursor-pointer shadow-md"
+              //   onClick={async () => {
+              //     await signOut();
+              //   }}
+              // >
+              //   {session?.user.image ? (
+              //     <Image
+              //       src={session.user.image}
+              //       alt="Profile"
+              //       className="h-10 w-10 rounded-full mr-3 border-2 border-red-700"
+              //       width={40}
+              //       height={40}
+              //     />
+              //   ) : (
+              //     <div className="h-10 w-10 rounded-full mr-3 border-2 border-red-700 flex items-center justify-center bg-gray-700 text-white font-semibold">
+              //       {getInitials(session.user?.name ?? "")}
+              //     </div>
+              //   )}
+              //   <p className="text-red-700 font-semibold tracking-wide uppercase">
+              //     Log out
+              //   </p>
+              // </div>
             )}
           </div>
         </div>
@@ -131,4 +147,3 @@ function SideBar() {
   );
 }
 
-export default SideBar;

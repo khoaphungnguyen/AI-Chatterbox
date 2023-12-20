@@ -24,6 +24,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
             if (!res.ok) throw new Error('Failed to fetch user');
             const user = await res.json();
+            //console.log('user', user);
             return user;
           }
         } catch (error) {

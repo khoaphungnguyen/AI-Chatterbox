@@ -10,17 +10,17 @@ export default function SignInPage() {
     const { pending } = useFormStatus();
     return (
         <div className="h-screen flex flex-col items-center justify-center bg-[#0F172A] text-center">
-            <div className="mb-4">
+            <div>
                 <Image 
                     src="/RapidSec.svg" 
-                    width={250}
-                    height={250}
+                    width={400}
+                    height={400}
                     alt="RapidSec Logo"
                 />
             </div>
-            <h2 className="text-white text-4xl font-bold mb-6 tracking-wide">Sign In to SmartChat</h2>
+            <h2 className="text-white text-4xl font-bold mb-6 tracking-wide">Welcome to SmartChat</h2>
             <div className="w-full max-w-sm">
-                <form action={dispatch} className="bg-white/20 backdrop-blur-lg shadow-md rounded-lg px-8 pt-6 pb-8">
+                <form action={dispatch} className="bg-white/20 backdrop-blur-lg shadow-md rounded-lg px-8 py-4">
                     <div className="mb-4">
                         <input
                             className="bg-transparent border-b-2 border-gray-200 text-white placeholder-gray-400 w-full py-2 px-3 leading-tight focus:outline-none focus:border-blue-500"
@@ -50,14 +50,12 @@ export default function SignInPage() {
                             Sign In
                         </button>
                     </div>
-                    <div className="flex h-8 items-end space-x-1" aria-live="polite" aria-atomic="true">
                         {errorMessage && (
-                            <>
+                         <div className="flex mt-2   space-x-1" aria-live="polite" aria-atomic="true">
                             <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
                             <p className="text-sm text-red-500">{errorMessage}</p>
-                            </>
+                           </div>
                         )}
-                    </div>
                 </form>
                 <p className="text-gray-400 mt-4">
                     Don't have an account?{" "}
