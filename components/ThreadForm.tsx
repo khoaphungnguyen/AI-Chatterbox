@@ -1,6 +1,5 @@
 import { PaperAirplaneIcon } from "@heroicons/react/20/solid";
 import React from "react";
-import { Session } from "next-auth";
 import TextareaAutosize from 'react-textarea-autosize';
 import useChatStore from "@/app/store/threadStore";
 import { Transition } from 'react-transition-group';
@@ -8,10 +7,10 @@ interface ThreadFormProps {
   prompt: string;
   setPrompt: React.Dispatch<React.SetStateAction<string>>;
   sendMessage: (message: string) => void;
-  session: Session | null;
+
 }
 
-const ThreadForm: React.FC<ThreadFormProps> = ({ prompt, setPrompt, sendMessage, session }) => {
+const ThreadForm: React.FC<ThreadFormProps> = ({ prompt, setPrompt, sendMessage }) => {
   const { isStreaming } = useChatStore();
  
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

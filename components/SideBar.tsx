@@ -3,23 +3,22 @@
 import { useSession } from "next-auth/react";
 import ModeSelection from "./ModeSelection";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Bars4Icon } from "@heroicons/react/20/solid";
 import NewThread from "./NewThread";
 import ThreadRow from "./ThreadRow";
-import { signOut } from '@/app/auth';
-
+import { signOut } from '@/auth';
+import { getSession } from "@/app/getSession";
 interface Thread {
   id: string;
   title: string;
 }
 
 function SideBar() {
-  const { data: session } = useSession();
   const [threads, setThreads] = useState<Thread[]>([]);
   const [isOpen, setIsOpen] = useState(false); // State to manage sidebar visibility
   const toggleSidebar = () => setIsOpen(!isOpen);
-
+  
   // Function to extract initials
   function getInitials(fullName: string) {
     const names = fullName.split(" ");
@@ -59,6 +58,7 @@ function SideBar() {
 
   return (
     <>
+ 
       {isOpen && (
         <div
           className="fixed inset-0 z-20 transition-opacity bg-black opacity-50"
@@ -94,12 +94,12 @@ function SideBar() {
             </div>
 
             {/* Logout Section */}
-            {session && (
+            { (
               <div
                 className="flex items-center justify-center mx-auto mb-4 p-2 hover:bg-gray-700 rounded-lg transition-all duration-300 cursor-pointer shadow-md"
                 onClick={() => signOut()}
               >
-                {session.user?.image ? (
+                {/* {session?.user.image ? (
                   <Image
                     src={session.user.image}
                     alt="Profile"
@@ -111,7 +111,7 @@ function SideBar() {
                   <div className="h-10 w-10 rounded-full mr-3 border-2 border-red-700 flex items-center justify-center bg-gray-700 text-white font-semibold">
                     {getInitials(session.user?.name ?? "")}
                   </div>
-                )}
+                )} */}
                 <p className="text-red-700 font-semibold tracking-wide uppercase">
                   Log out
                 </p>

@@ -1,14 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fetch from 'node-fetch';
-import { getToken } from 'next-auth/jwt';
-
+import {auth} from '../../../auth';
 export async function POST(req: NextRequest) {
-  // Retrieve the secret used for NextAuth
-  const secret = process.env.NEXTAUTH_SECRET;
-
-  // Attempt to get the authentication token
-  const authToken = await getToken({ req, secret });
-
+  const session = await auth();
   try {
     const { model } = await req.json();
     if (!model) {
@@ -19,7 +13,7 @@ export async function POST(req: NextRequest) {
       method: 'POST',  
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': authToken ? `Bearer ${authToken.accessToken}` : '',
+        'Authorization': session ? `Bearer ${session?.accessToken}` : '',
       },
       body: JSON.stringify({"model":model}),
     });

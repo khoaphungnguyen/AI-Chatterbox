@@ -1,6 +1,5 @@
 import { ArrowRightCircleIcon } from '@heroicons/react/24/outline';
 import React from 'react';
-import { Session } from "next-auth";
 interface Suggestion {
   title: string;
   content: string;
@@ -12,14 +11,14 @@ interface SuggestionsSectionProps {
   loading: boolean; 
   setPrompt: React.Dispatch<React.SetStateAction<string>>;
   sendMessage: (e: React.FormEvent<HTMLFormElement>) => void;
-  session: Session | null;
+
 }
 
 interface SuggestionsGridProps {
   suggestions: Suggestion[];
   sendMessage: (e: React.FormEvent<HTMLFormElement>) => void;
   setPrompt: React.Dispatch<React.SetStateAction<string>>;
-  session: Session | null;
+
 }
 
 const SuggestionSkeleton = () => (
@@ -30,7 +29,7 @@ const SuggestionSkeleton = () => (
   </div>
 );
 
-const SuggestionsSection: React.FC<SuggestionsSectionProps> = ({ suggestions, error, loading, setPrompt, sendMessage, session }) => (
+const SuggestionsSection: React.FC<SuggestionsSectionProps> = ({ suggestions, error, loading, setPrompt, sendMessage  }) => (
   <div className="mt-12 mx-4 my-8">
     {error && <div className="text-center text-red-500">{error}</div>}
     {loading && (
@@ -49,12 +48,12 @@ const SuggestionsSection: React.FC<SuggestionsSectionProps> = ({ suggestions, er
     {!loading && suggestions && suggestions.length === 0 && !error && (
       <div className="text-center text-gray-500">No suggestions available.</div>
     )}
-    {suggestions && suggestions.length > 0 && <SuggestionsGrid suggestions={suggestions} setPrompt={setPrompt} sendMessage={sendMessage} session={session}/>}
+    {suggestions && suggestions.length > 0 && <SuggestionsGrid suggestions={suggestions} setPrompt={setPrompt} sendMessage={sendMessage} />}
   </div>
 );
 
 
-const SuggestionsGrid: React.FC<SuggestionsGridProps> = ({ suggestions, setPrompt, sendMessage, session }) => {
+const SuggestionsGrid: React.FC<SuggestionsGridProps> = ({ suggestions, setPrompt, sendMessage,  }) => {
   const handleButtonClick = (content: string) => {
     setPrompt(content);
   };

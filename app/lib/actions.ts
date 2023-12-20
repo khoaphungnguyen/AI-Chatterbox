@@ -1,4 +1,6 @@
-import { signIn } from '../auth';
+'use server'
+
+import { signIn } from '../../auth';
 import { AuthError } from 'next-auth';
 
 export async function authenticate(
@@ -28,10 +30,10 @@ export async function signup(
       const fullName = formData.get('fullName');
       const email = formData.get('email');
       const password = formData.get('password');
-      const res = await fetch('/api/signup', {
+      const res = await fetch(`${process.env.BACKEND_URL}/auth/signup`,{
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fullName, email, password }), // Use extracted values
+        body: JSON.stringify({ fullName, email, password }), 
       });
   
       const data = await res.json();
