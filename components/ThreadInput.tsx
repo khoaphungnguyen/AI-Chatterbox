@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState } from 'react';
-import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import ThreadForm from './ThreadForm';
 import useChatStore from "@/app/store/threadStore";
@@ -14,7 +13,6 @@ type ThreadInputProps = {
 
 function ThreadInput({ id }: ThreadInputProps) {
   const [prompt, setPrompt] = useState('');
-  const { data: session } = useSession();
   const addMessage = useChatStore(state => state.addMessage);
   const { data: model } = useSWR('model', { fallbackData: 'gpt-3.5-turbo-1106' });
   const { setIsStreaming } = useChatStore();
@@ -46,10 +44,8 @@ function ThreadInput({ id }: ThreadInputProps) {
     } catch (error) {
       if (error instanceof Error) {
         toast.error(`An error occurred: ${error.message}`);
-        console.error("Error sending message:", error);
       } else {
         toast.error("An error occurred.");
-        console.error("Error sending message:", error);
       } 
     }  finally{
       setIsStreaming(false);
@@ -57,7 +53,7 @@ function ThreadInput({ id }: ThreadInputProps) {
   };
 
   return (
-    <ThreadForm session={session} prompt={prompt} setPrompt={setPrompt} sendMessage={() => sendMessage(prompt)}  />
+    <ThreadForm  prompt={prompt} setPrompt={setPrompt} sendMessage={() => sendMessage(prompt)}  />
   );
 }
 

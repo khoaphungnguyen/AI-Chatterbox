@@ -26,12 +26,13 @@ const ThreadForm: React.FC<ThreadFormProps> = ({ prompt, setPrompt, sendMessage 
   };
 
   return (
-    <div className="w-full py-8 rounded-lg shadow-md">
+    <div className="w-full py-10  rounded-lg shadow-md">
     <form onSubmit={handleSubmit} className="relative flex items-center justify-between max-w-3xl mx-auto rounded-lg">
       <TextareaAutosize
         minRows={1} 
         maxRows={6} 
-        className="w-full p-5 pr-16 text-base lg:text-lg text-white placeholder-gray-400 rounded-xl bg-gray-700 focus:outline-none border border-gray-700 resize-none"
+        className="w-full p-4 pr-16 text-base lg:text-lg text-white placeholder-gray-400 rounded-xl
+         bg-gray-700 focus:outline-none border border-gray-700 resize-none"
         placeholder="Send your message..."
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}

@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import Header from '@/components/Header';
 import MainTitle from '@/components/MainTitle';
+import { ChatMessage } from "@/typings";
+import useChatStore from "@/app/store/threadStore";
 
 import SuggestionsSection from '@/components/Suggestions';
 import ThreadForm from '@/components/ThreadForm';
@@ -13,8 +15,9 @@ import ThreadForm from '@/components/ThreadForm';
 export  default function Home() {
   const router = useRouter();
   const [prompt, setPrompt] = useState('');
+  const addMessage = useChatStore(state => state.addMessage);
   const { data: model } = useSWR('model', { fallbackData: 'gpt-3.5-turbo-1106' });
-
+  const { setIsStreaming } = useChatStore();
     // Updated fetcher function
     const fetcher = async (url: string) => {
       const response = await fetch(url, {
@@ -46,7 +49,8 @@ export  default function Home() {
         throw new Error(`Failed to create thread: ${response.statusText}`);
       }
       const data = await response.json();
-      router.push(`/thread/${data.threadId.id}`); 
+      await router.push(`/thread/${data.threadId.id}`); 
+      return data.threadId.id;
     } catch (error) {
       // Narrow down the type to Error
       if (error instanceof Error) {
@@ -59,31 +63,50 @@ export  default function Home() {
   };
 
   // Function to handle thread creation
-  const sendMessage = async (event:  React.FormEvent<HTMLFormElement> | React.KeyboardEvent<HTMLTextAreaElement>) => {
-    event.preventDefault();
-    if (!prompt.trim()) return;
+  const sendMessage = async (message: string) => {
+    if (!message.trim()) return;
+    const id = await createNewThread();
+    setIsStreaming(true);
+    const userMessage: ChatMessage = {
+      id: `user-${Date.now()}`,
+      content: message,
+      role: 'user',
+      createdAt: new Date().toISOString(),
+    };
 
-    const input = prompt.trim();
-    setPrompt("");
+    addMessage(userMessage);
+    setPrompt('');
+    
+ 
   
     try {
+      const response = await fetch(`/api/sendMessage/${id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message, model: model }),
+      });
 
-      const res = await fetch('/api/createThread', { method: 'POST' });
-      if (!res.ok) {
-        throw new Error(`Failed to create thread: ${res.statusText}`);
+      if (!response.ok) { 
+        toast.error("Failed to send message.");
       }
-      const data = await res.json();
-      router.push(`/thread/${data.threadId.id}`)
     } catch (error) {
-      console.error("Failed to create new chat:", error);
-      toast.error("There was an issue starting the chat.");
+      if (error instanceof Error) {
+        toast.error(`An error occurred: ${error.message}`);
+      } else {
+        toast.error("An error occurred.");
+      } 
+    }  finally{
+      setIsStreaming(false);
     }
   };
+
 return (
   <div className="flex flex-col h-full justify-between  text-gray-100 p-4">
-    <Header model={model} />
+    <Header  />
     <MainTitle />
-    <SuggestionsSection suggestions={parsedSuggestions} error={suggestionsError} loading={isLoading} setPrompt={setPrompt}  sendMessage={sendMessage} />
+    <SuggestionsSection suggestions={parsedSuggestions} error={suggestionsError} loading={isLoading} sendMessage={sendMessage} />
     <ThreadForm prompt={prompt} setPrompt={setPrompt} sendMessage={sendMessage}  />
   </div>
 );

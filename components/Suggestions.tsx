@@ -9,16 +9,13 @@ interface SuggestionsSectionProps {
   suggestions?: Suggestion[];
   error?: string;
   loading: boolean; 
-  setPrompt: React.Dispatch<React.SetStateAction<string>>;
-  sendMessage: (e: React.FormEvent<HTMLFormElement>) => void;
+  sendMessage: (message: string) => void;
 
 }
 
 interface SuggestionsGridProps {
   suggestions: Suggestion[];
-  sendMessage: (e: React.FormEvent<HTMLFormElement>) => void;
-  setPrompt: React.Dispatch<React.SetStateAction<string>>;
-
+  sendMessage: (message: string) => void;
 }
 
 const SuggestionSkeleton = () => (
@@ -29,7 +26,7 @@ const SuggestionSkeleton = () => (
   </div>
 );
 
-const SuggestionsSection: React.FC<SuggestionsSectionProps> = ({ suggestions, error, loading, setPrompt, sendMessage  }) => (
+const SuggestionsSection: React.FC<SuggestionsSectionProps> = ({ suggestions, error, loading, sendMessage  }) => (
   <div className="mt-12 mx-4 my-8">
     {error && <div className="text-center text-red-500">{error}</div>}
     {loading && (
@@ -48,14 +45,14 @@ const SuggestionsSection: React.FC<SuggestionsSectionProps> = ({ suggestions, er
     {!loading && suggestions && suggestions.length === 0 && !error && (
       <div className="text-center text-gray-500">No suggestions available.</div>
     )}
-    {suggestions && suggestions.length > 0 && <SuggestionsGrid suggestions={suggestions} setPrompt={setPrompt} sendMessage={sendMessage} />}
+    {suggestions && suggestions.length > 0 && <SuggestionsGrid suggestions={suggestions}  sendMessage={sendMessage} />}
   </div>
 );
 
 
-const SuggestionsGrid: React.FC<SuggestionsGridProps> = ({ suggestions, setPrompt, sendMessage,  }) => {
+const SuggestionsGrid: React.FC<SuggestionsGridProps> = ({ suggestions, sendMessage  }) => {
   const handleButtonClick = (content: string) => {
-    setPrompt(content);
+    sendMessage(content);
   };
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">

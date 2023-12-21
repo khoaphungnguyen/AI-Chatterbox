@@ -5,11 +5,10 @@ import ModeSelection from "./ModeSelection";
 import Image from "next/image";
 import { useState } from "react";
 import { Bars4Icon } from "@heroicons/react/20/solid";
-import NewThread from "./NewThread";
 import ThreadRow from "./ThreadRow";
-import { signOut } from '@/auth';
-import { getSession } from "@/app/getSession";
-import { PowerIcon } from '@heroicons/react/24/outline';
+import { signOut } from '@/components/SignOut';
+import { PlusIcon } from "@heroicons/react/24/outline";
+import { useRouter } from "next/navigation"; 
 interface Thread {
   id: string;
   title: string;
@@ -17,9 +16,11 @@ interface Thread {
 
 export default function SideNav() {
   const [threads, setThreads] = useState<Thread[]>([]);
-  const [isOpen, setIsOpen] = useState(false); // State to manage sidebar visibility
+  const [isOpen, setIsOpen] = useState(false)
   const toggleSidebar = () => setIsOpen(!isOpen);
-  
+  const { data: session } = useSession();
+  const router = useRouter(); // Initialize useRouter
+
   // Function to extract initials
   function getInitials(fullName: string) {
     const names = fullName.split(" ");
@@ -74,8 +75,14 @@ export default function SideNav() {
           <div className="flex flex-col h-screen p-4 overflow-y-auto bg-[#20232b]/50  shadow-md">
             {/* Sidebar main content */}
             <div className="flex-1">
-              <NewThread onNewThreadCreated={fetchThreads} />
-              <div className="">
+            <div
+              onClick={() => router.push('/')}
+              className="flex items-center space-x-2 border border-gray-700 bg-blue-500/50 hover:bg-blue-600/50 text-white px-4 py-2 rounded-md cursor-pointer transition-colors duration-300 ease-in-out"
+            >
+              <PlusIcon className="h-6 w-6"/>
+              <h1 className="text-lg font-semibold">New Thread</h1>
+            </div>
+              <div className="hidden">
                 <ModeSelection />
               </div>
               <div className="flex flex-col space-y-2 my-2">
@@ -96,43 +103,36 @@ export default function SideNav() {
             {/* Logout Section */}
             { (
               <div>
+
               <div className="hidden h-auto w-full grow rounded-md bg-gray-50 md:block"></div>
               <form
-                action={async () => {
+                onSubmit={async (e) => {
+                  e.preventDefault();
                   await signOut();
                 }}
+                className="flex justify-center items-center" // Added to center the form
               >
-                <button className="flex h-[48px] grow items-center justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-sky-100 hover:text-blue-600 md:flex-none md:justify-start md:p-2 md:px-3">
-                  <PowerIcon className="w-6" />
+                <button className="flex h-[56px] grow items-center justify-center gap-2 
+                rounded-md bg-gray-50 p-3 font-medium
+                hover:bg-red-100 hover:text-red-600 md:flex-none md:justify-start md:p-2 md:px-3 shadow-md transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110">
+                  {session?.user.image ? (
+                    <Image
+                      src={session.user.image}
+                      alt="Profile"
+                      className="h-10 w-10 rounded-full mr-3 border-2"
+                      width={48}
+                      height={48}
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-10 w-10 rounded-full bg-blue-500 text-white font-semibold text-lg border-4 border-white shadow-lg"> 
+                    {getInitials(session?.user?.name ?? "")}
+                  </div>
+                  )}
                   <div className="hidden md:block">Sign Out</div>
                 </button>
               </form>
-  
-              </div>
-              // <div
-              //   className="flex items-center justify-center mx-auto mb-4 p-2 hover:bg-gray-700 rounded-lg transition-all duration-300 cursor-pointer shadow-md"
-              //   onClick={async () => {
-              //     await signOut();
-              //   }}
-              // >
-              //   {session?.user.image ? (
-              //     <Image
-              //       src={session.user.image}
-              //       alt="Profile"
-              //       className="h-10 w-10 rounded-full mr-3 border-2 border-red-700"
-              //       width={40}
-              //       height={40}
-              //     />
-              //   ) : (
-              //     <div className="h-10 w-10 rounded-full mr-3 border-2 border-red-700 flex items-center justify-center bg-gray-700 text-white font-semibold">
-              //       {getInitials(session.user?.name ?? "")}
-              //     </div>
-              //   )}
-              //   <p className="text-red-700 font-semibold tracking-wide uppercase">
-              //     Log out
-              //   </p>
-              // </div>
-            )}
+              </div>        
+              )}
           </div>
         </div>
       ) : (

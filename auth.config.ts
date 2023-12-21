@@ -15,7 +15,15 @@ export const authConfig = {
       } else if (!isLoggedIn) {
         return false; // Redirect unauthenticated users to signin page
       } else if (isLoggedIn) {
+        const redirectUrl = nextUrl.searchParams.get('callbackUrl') || '';
+        // Redirect to callbackUrl if it exists
+        if (nextUrl.searchParams.get('callbackUrl')) {
+          console.log("callback is called")
+          return Response.redirect(redirectUrl)
+        } 
+        console.log("middleware is called")
         return true
+       
       }
     },
     async jwt({ token, user }) {
@@ -31,23 +39,13 @@ export const authConfig = {
     },
     async session({ session, token }) {
       // Add property to session, like an access_token from a provider.
-      if (token)  {
-        session.accessToken = token.accessToken ;
-        session.refreshToken = token.refresh;
-        session.user.id = token.id;
+      if (session && token )  {
+        session.accessToken = token.accessToken as string;
         session.user.name = token.name;
       }
 
       return session;
     },
-    async redirect({ url, baseUrl }) {
-      // Allows relative callback URLs
-      if (url.startsWith("/")) return `${baseUrl}${url}`
-      // Allows callback URLs on the same origin
-      else if (new URL(url).origin === baseUrl) return url
-      return baseUrl
-    }
-    
   },
   providers: [], 
 } satisfies NextAuthConfig;

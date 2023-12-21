@@ -5,7 +5,6 @@ import Message from './Message';
 import useSWR from 'swr';
 import useChatStore from '@/app/store/threadStore';
 import { ChatMessage } from '@/typings';
-import { ArchiveBoxArrowDownIcon, ArrowDownCircleIcon } from '@heroicons/react/20/solid';
 
 type ThreadProps = {
   id: string;
@@ -29,7 +28,7 @@ const Thread: React.FC<ThreadProps> = ({ id }) => {
     shouldRetryOnError: false,
   });
 
-  const { messages, addMessage, updateMessage, setIsStreaming, error, reset } = useChatStore();
+  const { messages, addMessage, updateMessage, error, reset } = useChatStore();
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -100,25 +99,18 @@ const Thread: React.FC<ThreadProps> = ({ id }) => {
 
   return (
     <div ref={chatContainerRef} className="flex-1 mt-10 overflow-y-scroll overflow-x-hidden">
-  {messages.length > 0 ? (
-    messages.map((message) => (  
-        <Message key={`message-${message.id}`} message={message}/>
-    ))
-  ) : (
-    <>
-    <p className='mt-20 text-center text-white text-2xl'>
-      Ready to start? Enter your prompt below!
-    </p>
-    <ArrowDownCircleIcon className='h-10 w-10 mx-auto mt-5 text-white animate-bounce transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110' />
-  </>
-  )}
-  {error && (
-    <div>
-      <p>Error: {error}</p>
-      <p>Please try again later or contact support if the problem persists.</p>
-    </div>
-  )}
-</div>
+    {messages.length > 0 && (
+      messages.map((message) => (  
+          <Message key={`message-${message.id}`} message={message}/>
+      ))
+    )}
+    {/* {error && (
+      <div>
+        <p>Error: {error}</p>
+        <p>Please try again later or contact support if the problem persists.</p>
+      </div>
+    )} */}
+  </div>
   );
 };
 

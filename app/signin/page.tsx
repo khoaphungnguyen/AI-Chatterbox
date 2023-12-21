@@ -11,12 +11,7 @@ export default function SignInPage() {
     return (
         <div className="h-screen flex flex-col items-center justify-center bg-[#0F172A] text-center">
             <div>
-                <Image 
-                    src="/RapidSec.svg" 
-                    width={400}
-                    height={400}
-                    alt="RapidSec Logo"
-                />
+         
             </div>
             <h2 className="text-white text-4xl font-bold mb-6 tracking-wide">Welcome to SmartChat</h2>
             <div className="w-full max-w-sm">

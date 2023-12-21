@@ -17,56 +17,55 @@ function ThreadRow({ id, title, onDelete }: Props) {
   const [isDeleteConfirmationVisible, setDeleteConfirmationVisible] = useState(false);
 
   const handleDelete = useCallback(async () => {
-  // Close any open toasts to prevent duplicates
-  toast.dismiss();
+    // Close any open toasts to prevent duplicates
+    toast.dismiss();
 
-  try {
-    const response = await fetch(`/api/deleteThread/${id}`, { method: 'DELETE' });
-    if (!response.ok) {
-      throw new Error('Failed to delete thread');
+    try {
+      const response = await fetch(`/api/deleteThread/${id}`, { method: 'DELETE' });
+      if (!response.ok) {
+        throw new Error('Failed to delete thread');
+      }
+      onDelete();
+      toast.success('Thread deleted successfully');
+
+      // Fallback method to check the current URL if router does not provide it
+      const currentPath = window.location.pathname;
+      if (currentPath === `/thread/${id}`) {
+        router.push('/');
+      }
+    } catch (error) {
+      // Error handling
+    } finally {
+      setToastVisible(false);
     }
-    onDelete();
-    toast.success('Thread deleted successfully');
+  }, [id, onDelete, router]);
 
-    // Fallback method to check the current URL if router does not provide it
-    const currentPath = window.location.pathname;
-    if (currentPath === `/thread/${id}`) {
-      router.push('/');
-    }
-  } catch (error) {
-    // Error handling
-  } finally {
-    setToastVisible(false);
-  }
-}, [id, onDelete, router]);
-
-
-  const handleKeyDown = useCallback((event) => {
+  const handleKeyDown = useCallback((event: KeyboardEvent) => { 
     if (event.key === 'Enter' && isDeleteConfirmationVisible) {
       handleDelete();
     }
   }, [isDeleteConfirmationVisible, handleDelete]);
 
   useEffect(() => {
-    setActive(pathname.includes(id));
-
     if (isDeleteConfirmationVisible) {
       document.addEventListener('keydown', handleKeyDown);
     }
 
     return () => {
-      if (isDeleteConfirmationVisible) {
-        document.removeEventListener('keydown', handleKeyDown);
-      }
+      document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [pathname, id, isDeleteConfirmationVisible, handleKeyDown]);
+  }, [isDeleteConfirmationVisible, handleKeyDown]);
+
+  useEffect(() => {
+    setActive(pathname.includes(id));
+  }, [pathname, id]);
 
   const showDeleteConfirmation = () => {
     if (isToastVisible) {
       // If a toast is already visible, do nothing
       return;
     }
-
+  
     setToastVisible(true); // Indicate that a toast will be visible
     setDeleteConfirmationVisible(true);
     toast(
@@ -93,7 +92,7 @@ function ThreadRow({ id, title, onDelete }: Props) {
                 onClick={() => {
                   setDeleteConfirmationVisible(false);
                   toast.dismiss(t.id);
-                  handleDelete();
+                  handleDelete(); // Call handleDelete directly without checking isDeleteConfirmationVisible
                 }}
                 className="text-sm bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-6 rounded-md transition duration-150 ease-in-out"
                 autoFocus
@@ -108,13 +107,17 @@ function ThreadRow({ id, title, onDelete }: Props) {
         duration: Infinity,
         position: "top-center",
         id: `delete-confirmation-${id}`,
-        onClose: () => setToastVisible(false), // Reset toast visibility state when toast is closed
       }
     );
   };
-  
-  
 
+  useEffect(() => {
+    if (!isToastVisible) {
+      // If a toast is not visible, set deleteConfirmationVisible to false
+      setDeleteConfirmationVisible(false);
+    }
+  }, [isToastVisible]);
+  
   return (
     <div
       className={`rounded-lg px-5 py-3 text-sm items-center
