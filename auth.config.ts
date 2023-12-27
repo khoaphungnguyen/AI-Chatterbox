@@ -27,7 +27,6 @@ export const authConfig = {
     async jwt({ token, user }) {
       // Add access_token to the token right after signin
       if (user) {
-       // console.log('user', user);
         token.accessToken = user.accessToken;
         token.refresh = user.refreshToken;
         token.id = user.id;
@@ -45,5 +44,6 @@ export const authConfig = {
       return session;
     },
   },
+
   providers: [], 
 } satisfies NextAuthConfig;

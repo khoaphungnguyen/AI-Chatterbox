@@ -1,9 +1,8 @@
 'use server'
 
-import { useSearchParams } from 'next/navigation';
 import { signIn } from '../../auth';
 import { AuthError } from 'next-auth';
-
+import { redirect } from 'next/navigation'
 export async function authenticate(
   prevState: string | undefined,
   formData: FormData,
@@ -44,8 +43,7 @@ export async function signup(
       const data = await res.json();
   
       if (res.ok) {
-        // Redirect or sign in the user after successful sign-up
-        signIn('credentials', { email, password });
+        redirect("/");
       } else {
         console.error('Sign Up Failed', data);
         // Handle errors such as email already in use

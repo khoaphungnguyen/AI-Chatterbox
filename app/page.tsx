@@ -34,9 +34,8 @@ export  default function Home() {
       return response.json(); 
     };
   
-    // Updated useSWR hook
-    const { data: suggestions, error: suggestionsError, isLoading } = useSWR(['/api/fetchSuggestions', model], 
-      () => fetcher('/api/fetchSuggestions'), {
+    const { data: suggestions, error: suggestionsError, isLoading } = useSWR(['/api/getSuggestions', model], 
+      () => fetcher('/api/getSuggestions'), {
         shouldRetryOnError: false,
         revalidateOnFocus: false,
     });
@@ -54,7 +53,7 @@ export  default function Home() {
       const data = await response.json();
       router.push(`/thread/${data.threadId.id}`); 
       //Add delay to allow thread to be created
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 500));
       setIsStreaming(true);
       const userMessage: ChatMessage = {
         id: `user-${Date.now()}`,

@@ -4,21 +4,21 @@ import Image from 'next/image';
 import { ExclamationCircleIcon, } from '@heroicons/react/24/outline';
 import { authenticate } from '@/app/lib/actions';
 import { useFormState, useFormStatus } from 'react-dom';
+import icon from '@/public/icon.svg'
 
 export default function SignInPage() {
     const [errorMessage, dispatch] = useFormState(authenticate, undefined);
     const { pending } = useFormStatus();
     return (
         <div className="h-screen flex flex-col items-center justify-center bg-[#0F172A] text-center">
-            <div>
-            <Image 
-                    src="/RapidSec.svg" 
-                    width={400}
-                    height={400}
-                    alt="RapidSec Logo"
-                />
-            </div>
-            <h2 className="text-white text-4xl font-bold mb-6 tracking-wide">Welcome to SmartChat</h2>
+                <Image 
+                        src={icon}
+                        width={420}
+                        height={420}
+                        alt="RapidSec Logo"
+    
+                    />       
+            <h2 className="text-white text-4xl font-bold mb-6 ">Welcome to SmartChat</h2>
             <div className="w-full max-w-sm">
                 <form action={dispatch} className="bg-white/20 backdrop-blur-lg shadow-md rounded-lg px-8 py-4">
                     <div className="mb-4">

@@ -12,8 +12,8 @@ export default async function RootLayout({
   return (
     <html lang="en" className="h-full bg-gray-900">
           <head>
-          < link className="text-red-500" rel="icon" href="/RapidSec.svg" sizes="any" />
-          </head>
+          <link rel="icon" href="/favicon.svg" type="image/svg" sizes="32x32" />     
+      </head>
           <body className="h-full">
             <Providers session={session} >
             <div className="flex flex-col lg:flex-row min-h-screen">

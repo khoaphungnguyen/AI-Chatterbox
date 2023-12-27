@@ -89,9 +89,12 @@ const Message: React.FC<Props> = ({ message }) => {
             height={32}
           />
         ) : (
-          <div className="h-9 w-9 rounded-full border-2 border-gray-500 flex items-center justify-center bg-gray-500  font-semibold text-white">
+          <div className="h-9 w-9 rounded-full bg-blue-500 text-white font-semibold  shadow-lg flex items-center justify-center transition-all duration-200 ease-in-out transform hover:scale-110">
+          <p className="text-center ">
             {session?.user?.name ? session.user.name.split(' ').map(namePart => namePart[0].toUpperCase()).join('') : ""}
-          </div>
+          </p>
+        </div>
+          
         )}
       <div className="px-1 rounded-lg my-1 cursor-pointer relative w-full shadow-sm">
           {isSmartChat && 

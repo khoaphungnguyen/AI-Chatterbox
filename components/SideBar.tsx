@@ -136,7 +136,7 @@ export default function SideNav() {
           </div>
         </div>
       ) : (
-        <button
+       session && <button
           onClick={handleToggleButtonClick}
           className="fixed z-40 top-0 left-0 p-4 text-white"
         >

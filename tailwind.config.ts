@@ -36,7 +36,7 @@ const config: Config = {
             '--tw-prose-captions': theme('colors.sky[700]'),
             '--tw-prose-code': theme('colors.sky[900]'),
             '--tw-prose-pre-code': theme('colors.sky[100]'),
-            //'--tw-prose-pre-bg': theme('colors.sky[900]'),
+            '--tw-prose-pre-bg': theme('colors.sky[900]'),
             '--tw-prose-th-borders': theme('colors.sky[300]'),
             '--tw-prose-td-borders': theme('colors.sky[200]'),
             '--tw-prose-invert-body': theme('colors.sky[200]'),
