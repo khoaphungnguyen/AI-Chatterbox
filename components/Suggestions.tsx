@@ -51,13 +51,14 @@ const SuggestionsSection: React.FC<SuggestionsSectionProps> = ({ suggestions, er
 
 
 const SuggestionsGrid: React.FC<SuggestionsGridProps> = ({ suggestions, sendMessage  }) => {
-  const handleButtonClick = (content: string) => {
-    sendMessage(content);
+  const handleButtonClick = (title:string, content: string) => {
+    const message = title + ": " + content;
+    sendMessage(message);
   };
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
       {suggestions.map((suggestion, index) => (
-        <form key={index} onSubmit={(e) => { e.preventDefault(); handleButtonClick(suggestion.content); }}>
+        <form key={index} onSubmit={(e) => { e.preventDefault(); handleButtonClick(suggestion.title, suggestion.content); }}>
           <div className="border rounded-xl p-2 border-gray-500 hover:border-gray-100">
             <button type="submit" className="btn relative btn-neutral group w-full rounded-xl text-left shadow-md text-gray-300">
               <div className="p-2">

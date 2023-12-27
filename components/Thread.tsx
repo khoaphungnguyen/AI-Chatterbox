@@ -43,7 +43,7 @@ const Thread: React.FC<ThreadProps> = ({ id }) => {
 
   useEffect(() => {
     reset();
-
+  
     if (initialMessages) {
       initialMessages.forEach((message) => {
         if (!messages.some((m) => m.id === message.id)) {
@@ -51,7 +51,7 @@ const Thread: React.FC<ThreadProps> = ({ id }) => {
         }
       });
     }
-
+  
     let eventSource: EventSource | null = null; // Define eventSource in the outer scope
   
     const setupSSE = () => {
@@ -60,7 +60,7 @@ const Thread: React.FC<ThreadProps> = ({ id }) => {
   
       eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
-      
+  
         if (data.content === '' && currentStreamId) {
           currentStreamId = null;
         } else if (!currentStreamId) {
@@ -82,6 +82,9 @@ const Thread: React.FC<ThreadProps> = ({ id }) => {
           eventSource.close();
         }
         useChatStore.setState({ error: 'Stream Error' });
+  
+        // Try to reconnect after 5 seconds
+        setTimeout(setupSSE, 5000);
       };
     };
   
@@ -104,12 +107,6 @@ const Thread: React.FC<ThreadProps> = ({ id }) => {
           <Message key={`message-${message.id}`} message={message}/>
       ))
     )}
-    {/* {error && (
-      <div>
-        <p>Error: {error}</p>
-        <p>Please try again later or contact support if the problem persists.</p>
-      </div>
-    )} */}
   </div>
   );
 };

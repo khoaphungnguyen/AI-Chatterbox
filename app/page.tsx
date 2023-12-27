@@ -42,14 +42,52 @@ export  default function Home() {
     });
   // Parse suggestions and handle errors
   const parsedSuggestions = suggestions ? JSON.parse(suggestions) : [];
-  const createNewThread = async () => {
+
+  const sendMessage = async (message: string) => {
+    if (!message.trim()) return;
+  
     try {
       const response = await fetch('/api/createThread', { method: 'POST' });
       if (!response.ok) {
         throw new Error(`Failed to create thread: ${response.statusText}`);
       }
       const data = await response.json();
-      await router.push(`/thread/${data.threadId.id}`); 
+      router.push(`/thread/${data.threadId.id}`); 
+      //Add delay to allow thread to be created
+      await new Promise(resolve => setTimeout(resolve, 300));
+      setIsStreaming(true);
+      const userMessage: ChatMessage = {
+        id: `user-${Date.now()}`,
+        content: message,
+        role: 'user',
+        createdAt: new Date().toISOString(),
+      };
+  
+      addMessage(userMessage);
+      setPrompt('');
+  
+      try {
+        const response = await fetch(`/api/sendMessage/${data.threadId.id}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ message, model: model }),
+        });
+  
+        if (!response.ok) { 
+          toast.error("Failed to send message.");
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          toast.error(`An error occurred: ${error.message}`);
+        } else {
+          toast.error("An error occurred.");
+        } 
+      }  finally{
+        setIsStreaming(false);
+      }
+  
       return data.threadId.id;
     } catch (error) {
       // Narrow down the type to Error
@@ -59,46 +97,6 @@ export  default function Home() {
         // If it's not an Error instance, handle accordingly
         alert('An unknown error occurred');
       } 
-    }
-  };
-
-  // Function to handle thread creation
-  const sendMessage = async (message: string) => {
-    if (!message.trim()) return;
-    const id = await createNewThread();
-    setIsStreaming(true);
-    const userMessage: ChatMessage = {
-      id: `user-${Date.now()}`,
-      content: message,
-      role: 'user',
-      createdAt: new Date().toISOString(),
-    };
-
-    addMessage(userMessage);
-    setPrompt('');
-    
- 
-  
-    try {
-      const response = await fetch(`/api/sendMessage/${id}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ message, model: model }),
-      });
-
-      if (!response.ok) { 
-        toast.error("Failed to send message.");
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(`An error occurred: ${error.message}`);
-      } else {
-        toast.error("An error occurred.");
-      } 
-    }  finally{
-      setIsStreaming(false);
     }
   };
 

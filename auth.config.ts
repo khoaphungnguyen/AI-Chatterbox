@@ -18,10 +18,8 @@ export const authConfig = {
         const redirectUrl = nextUrl.searchParams.get('callbackUrl') || '';
         // Redirect to callbackUrl if it exists
         if (nextUrl.searchParams.get('callbackUrl')) {
-          console.log("callback is called")
           return Response.redirect(redirectUrl)
-        } 
-        console.log("middleware is called")
+        }
         return true
        
       }

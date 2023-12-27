@@ -46,23 +46,12 @@ const CopyButton: React.FC<{ codeString: string }> = ({ codeString }) => (
 
 const CodeComponent: React.FC<CustomCodeComponentProps> = ({ inline, className, children }) => {
   const language = (className?.match(/language-([\w-.]+)/) || [])[1] || 'plaintext';
-  const customStyle = {
-    ...vscDarkPlus,
-    'code[class*="language-"]': {
-      ...vscDarkPlus['code[class*="language-"]'],
-      fontSize: '1em',
-    },
-    'pre[class*="language-"]': {
-      ...vscDarkPlus['pre[class*="language-"]'],
-      fontSize: '1em',
-    },
-  };
   const codeString = String(children).replace(/\n$/, '');
 
   return !inline ? (
-    <div className="relative">
+    <div className="relative ">
       <CopyButton codeString={codeString} />
-      <SyntaxHighlighter language={language} style={customStyle} >
+      <SyntaxHighlighter language={language} style={vscDarkPlus}  >
         {codeString}
       </SyntaxHighlighter>
     </div>
@@ -83,28 +72,28 @@ const Message: React.FC<Props> = ({ message }) => {
 
   return (
     <div className="flex items-start space-x-3 max-w-3xl mx-auto">      
-    {isSmartChat ? (
-        <Image 
-          src="/icon.png" 
-          alt="Assistant" 
-          className="h-9 w-9 rounded-full"
-          width={32} 
-          height={32}
-        />
-      ) : session?.user?.image ? (
-        <Image 
-          src={session.user.image} 
-          alt={`Profile picture of ${session.user.name}`}
-          className="h-9 w-9 rounded-full border-2 border-gray-500"
-          width={32} 
-          height={32}
-        />
-      ) : (
-        <div className="h-9 w-9 rounded-full border-2 border-gray-500 flex items-center justify-center bg-gray-500  font-semibold text-white">
-          {session?.user?.name ? session.user.name.split(' ').map(namePart => namePart[0].toUpperCase()).join('') : ""}
-        </div>
-      )}
-      <div className="px-1 rounded-lg my-1 cursor-pointer relative w-full">
+      {isSmartChat ? (
+          <Image 
+            src="/icon.png" 
+            alt="Assistant" 
+            className="h-9 w-9 rounded-full"
+            width={32} 
+            height={32}
+          />
+        ) : session?.user?.image ? (
+          <Image 
+            src={session.user.image} 
+            alt={`Profile picture of ${session.user.name}`}
+            className="h-9 w-9 rounded-full border-2 border-gray-500"
+            width={32} 
+            height={32}
+          />
+        ) : (
+          <div className="h-9 w-9 rounded-full border-2 border-gray-500 flex items-center justify-center bg-gray-500  font-semibold text-white">
+            {session?.user?.name ? session.user.name.split(' ').map(namePart => namePart[0].toUpperCase()).join('') : ""}
+          </div>
+        )}
+      <div className="px-1 rounded-lg my-1 cursor-pointer relative w-full shadow-sm">
           {isSmartChat && 
         <CopyToClipboard text={content} onCopy={() => toast.success('Text copied to clipboard!')}>
           <button className="absolute top-2 right-2 text-white rounded p-2 hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-opacity-50 transition ease-in-out duration-200" title="Copy to clipboard">
@@ -114,20 +103,20 @@ const Message: React.FC<Props> = ({ message }) => {
           </button>
         </CopyToClipboard>
         }
-        <div className="flex justify-between items-center">
-        <p className={`text-lg font-semibold ${isSmartChat ? 'text-white' : 'text-blue-500'}`}>
-        {isSmartChat ? "Assistant" : session?.user?.name}
-          </p>
-        </div>
+        <div className="flex justify-between items-center mb-2">
+  <p className={`text-lg font-semibold ${isSmartChat ? 'text-white' : 'text-white'}`}>
+    {isSmartChat ? "Assistant" : session?.user?.name}
+  </p>
+</div>
 
-        <ReactMarkdown 
-          className={`prose prose-sky lg:prose-lg ${isSmartChat ? 'text-white/70' : 'text-white/80'}`} 
-          remarkPlugins={[gfm]}
-          components={renderers}
-        >
-          {content}
-        </ReactMarkdown>
-        <p className="mb-2 text-gray-500 text-right text-sm">{timeString}</p>
+<ReactMarkdown 
+  className={`prose prose-sky lg:prose-lg ${isSmartChat ? 'text-white/70' : 'text-gray-300'}`} 
+  remarkPlugins={[gfm]}
+  components={renderers}
+>
+  {content}
+</ReactMarkdown>
+<p className="mt-2 text-gray-400 text-right text-sm">{timeString}</p>
       </div>  
     </div>
     );
