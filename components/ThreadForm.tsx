@@ -57,7 +57,8 @@ const ThreadForm: React.FC<ThreadFormProps> = ({ prompt, setPrompt, sendMessage 
         )}
       </Transition>
     </form>
-    <p className="mt-4 text-sm text-center text-gray-500">Use AI-generated content cautiously as it may not always be accurate and can sometimes provide erroneous information.</p>
+    <p className="mt-4 text-xs sm:text-sm text-center text-gray-500">Use AI-generated content cautiously as it may not always be accurate
+     and can sometimes provide erroneous information.</p>
   </div>
   );
 };

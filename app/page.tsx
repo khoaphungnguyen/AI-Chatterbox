@@ -5,10 +5,8 @@ import useSWR from 'swr';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import Header from '@/components/Header';
-import MainTitle from '@/components/MainTitle';
 import { ChatMessage } from "@/typings";
 import useChatStore from "@/app/store/threadStore";
-
 import SuggestionsSection from '@/components/Suggestions';
 import ThreadForm from '@/components/ThreadForm';
 
@@ -100,11 +98,15 @@ export  default function Home() {
   };
 
 return (
-  <div className="flex flex-col h-full justify-between  text-gray-100 p-4">
-    <Header  />
-    <MainTitle />
-    <SuggestionsSection suggestions={parsedSuggestions} error={suggestionsError} loading={isLoading} sendMessage={sendMessage} />
-    <ThreadForm prompt={prompt} setPrompt={setPrompt} sendMessage={sendMessage}  />
-  </div>
-);
+    <div className="flex flex-col h-full justify-between text-gray-100 ">
+      <Header />
+      <div className="container mx-auto flex flex-col justify-between items-center px-4 py-8">
+         <h2 className="text-2xl md:text-4xl font-semibold text-center md:text-left text-gray-300 text-shadow">Explore Suggested Topics or Ask Something New</h2>
+      </div>
+      <div >
+          <SuggestionsSection suggestions={parsedSuggestions} error={suggestionsError} loading={isLoading} sendMessage={sendMessage} />
+          <ThreadForm prompt={prompt} setPrompt={setPrompt} sendMessage={sendMessage} />
+      </div>
+    </div>
+  );
 }

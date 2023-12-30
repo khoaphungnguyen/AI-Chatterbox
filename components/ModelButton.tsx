@@ -5,7 +5,7 @@ type ModelButtonProps = {
   label: string;
   isActive: boolean;
   icon: 'bolt' | 'sparkles';
-  onClick: () => void; // Add this line
+  onClick: () => void;
 };
 
 const ModelButton = ({ label, isActive, icon, onClick }: ModelButtonProps) => {
@@ -14,9 +14,9 @@ const ModelButton = ({ label, isActive, icon, onClick }: ModelButtonProps) => {
     
     return (
       <button
-        onClick={onClick} // Add this line
+        onClick={onClick} 
         className={`flex items-center justify-center gap-1 px-4 py-2 rounded-lg border transition duration-100 ease-in-out
-        ${isActive ? "bg-gray-700 border-gray-700 text-gray-100 shadow-lg" : "text-gray-500 border-gray-600 hover:bg-gray-700 hover:text-gray-100"}`}
+        ${isActive ? "bg-gray-700 border-gray-700 text-gray-100 shadow-lg hover:bg-gray-600 hover:text-gray-200" : "text-gray-500 border-gray-600 hover:bg-gray-700 hover:text-gray-100"}`}
         aria-label={`Select ${label}`}
       >
         <span className="hidden sm:block">{label}</span>

@@ -19,6 +19,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      boxShadow: {
+        'text': '0 2px 3px rgba(0, 0, 0, 0.1)',
+      },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic':
