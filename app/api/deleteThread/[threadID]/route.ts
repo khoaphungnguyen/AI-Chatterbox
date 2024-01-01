@@ -27,7 +27,7 @@ export async function DELETE(req: NextRequest) {
   } catch (error) {
     // Log the error message if it's an instance of Error
     if (error instanceof Error) {
-      console.error('Error connecting to Go server:', error.message);
+      console.error('Error backend server:', error.message);
     }
     return new Response("Server error", { status: 500 });
   }

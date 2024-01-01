@@ -19,24 +19,24 @@ declare module 'next-auth' {
     refreshToken?: string;
     expiresIn?: number;
   }
-
   // Extend the Session type
   interface Session {
     user: {
       id: string
     } & DefaultSession["user"] // Make sure the user in Session is of the extended User type
     accessToken?: string;
-    refreshToken?: string;
+    expiresIn?: number;
+    error?: "RefreshAccessTokenError"
+
   }
 }
 
-declare module 'next-auth/jwt' {
-  /**
-   * Extends the JWT type with custom properties
-   */
+declare module '@auth/core/jwt' {
   interface JWT {
     accessToken?: string;
     refreshToken?: string;
     expiresIn?: number;
+    id?: string;
+    error?: "RefreshAccessTokenError"
   }
 }

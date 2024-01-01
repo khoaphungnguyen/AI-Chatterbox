@@ -16,6 +16,7 @@ export default async function RootLayout({
       </head>
           <body className="h-full">
             <Providers session={session} >
+              
             <div className="flex flex-col lg:flex-row min-h-screen">
               <div className="flex-1 bg-gray-800 sm:h-screen">
                 <SideBar />

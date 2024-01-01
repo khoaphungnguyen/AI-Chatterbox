@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
 
   } catch (error) {
     // Log the error and return a server error response
-    console.error('Error connecting to Go server:', error);
+    console.error('Error backend server:', error);
     return new Response("Server error", { status: 500 });
   }
 }

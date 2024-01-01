@@ -19,7 +19,7 @@ export async function POST(req: NextRequest){
         const data = await response.json();
         return NextResponse.json({threadId: data }, {status: 200, });
     } catch (error){
-        console.error('Error connecting to Go server:', error);
+        console.error('Error backend server:', error);
         return new Response("Server error", { status: 500 });
           
     }

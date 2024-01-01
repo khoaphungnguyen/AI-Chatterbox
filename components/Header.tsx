@@ -1,10 +1,28 @@
+'use client'
+
 import ModelButton from "./ModelButton";
 import useSWR from 'swr';
+import {useSession} from 'next-auth/react';
+import { useRouter, usePathname } from "next/navigation"; 
+
 
 const Header: React.FC = () => {
   const { data: model, mutate: setModel } = useSWR('model', {
     fallbackData: 'gpt-3.5-turbo-1106' // Set the default or fallback model
   });
+  const { data: session } = useSession();
+  const router = useRouter(); // Initialize useRouter
+  const pathname = usePathname();
+
+  const handleClick = (modelName: string) => {
+    console.log("session", session)
+    if (session && session.error) {
+      router.push(`/api/auth/signin?callbackUrl=${pathname}`);
+      console.log("Refresh token is invalid")
+      return
+    }
+    setModel(modelName);
+  };
 
   return (
     <header className="w-full px-4 py-4 sticky top-0 bg-gradient-to-r from-gray-800 to-gray-900 text-white shadow-md">
@@ -24,19 +42,19 @@ const Header: React.FC = () => {
             label="GPT 3.5" 
             icon="bolt" 
             isActive={model === 'gpt-3.5-turbo-1106'} 
-            onClick={() => setModel('gpt-3.5-turbo-1106')}
+            onClick={() => handleClick('gpt-3.5-turbo-1106')}
           />
           <ModelButton 
             label="GPT 4" 
             icon="sparkles" 
             isActive={model === 'gpt-4-1106-preview'} 
-            onClick={() => setModel('gpt-4-1106-preview')}
+            onClick={() => handleClick('gpt-4-1106-preview')}
           />
           <ModelButton 
             label="Local" 
             icon="sparkles" 
             isActive={model === 'local'} 
-            onClick={() => setModel('local')}
+            onClick={() => handleClick('local')}
           />
         </div>
       </div>

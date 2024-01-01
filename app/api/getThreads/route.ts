@@ -18,7 +18,7 @@ export async function GET(req: NextRequest, res: NextResponse ){
         const data = await response.json();
         return NextResponse.json({data: data }, {status: 200});
     } catch (error){
-        console.error('Error connecting to Go server:', error);
+        console.error('Error backend server:', error);
         return new Response("Server error", { status: 500 });
           
     }

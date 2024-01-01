@@ -6,6 +6,8 @@ import ThreadForm from './ThreadForm';
 import useChatStore from "@/app/store/threadStore";
 import { ChatMessage } from "@/typings";
 import useSWR from 'swr';
+import { useSession } from 'next-auth/react';
+import { useRouter, usePathname } from "next/navigation"; 
 
 type ThreadInputProps = {
   id: string;
@@ -16,8 +18,16 @@ function ThreadInput({ id }: ThreadInputProps) {
   const addMessage = useChatStore(state => state.addMessage);
   const { data: model } = useSWR('model', { fallbackData: 'gpt-3.5-turbo-1106' });
   const { setIsStreaming } = useChatStore();
+  const { data: session } = useSession();
+  const router = useRouter();
+  const pathname = usePathname();
   const sendMessage = async (message: string) => {
     if (!message.trim()) return;
+    if (session && session.error) {
+      router.push(`/api/auth/signin?callbackUrl=${pathname}`);
+      console.log("Refresh token is invalid")
+      return
+    }
     setIsStreaming(true);
     const userMessage: ChatMessage = {
       id: `user-${Date.now()}`,

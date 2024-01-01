@@ -8,7 +8,7 @@ import { Bars4Icon } from "@heroicons/react/20/solid";
 import ThreadRow from "./ThreadRow";
 import { signOut } from '@/components/SignOut';
 import { PlusIcon } from "@heroicons/react/24/outline";
-import { useRouter } from "next/navigation"; 
+import { useRouter, usePathname } from "next/navigation"; 
 interface Thread {
   id: string;
   title: string;
@@ -20,7 +20,7 @@ export default function SideNav() {
   const toggleSidebar = () => setIsOpen(!isOpen);
   const { data: session } = useSession();
   const router = useRouter(); // Initialize useRouter
-
+  const pathname = usePathname(); // Initialize usePathname
   // Function to extract initials
   function getInitials(fullName: string) {
     const names = fullName.split(" ");
@@ -44,6 +44,11 @@ export default function SideNav() {
   // Call fetchThreads when the toggle button is pressed
   const handleToggleButtonClick = () => {
     if (!isOpen) {
+      if (session && session.error) {
+        router.push(`/api/auth/signin?callbackUrl=${pathname}`);
+        console.log("Refresh token is invalid")
+        return
+      }
       fetchThreads();
     }
     toggleSidebar();
@@ -58,6 +63,7 @@ export default function SideNav() {
     ? "translate-x-0 ease-out"
     : "-translate-x-full ease-in";
 
+    
   return (
     <>
       {isOpen && (

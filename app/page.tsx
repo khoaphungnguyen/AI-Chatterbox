@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import useSWR from 'swr';
-import { useRouter } from 'next/navigation';
+import {  useRouter, usePathname } from 'next/navigation';
 import toast from 'react-hot-toast';
 import Header from '@/components/Header';
 import { ChatMessage } from "@/typings";
 import useChatStore from "@/app/store/threadStore";
 import SuggestionsSection from '@/components/Suggestions';
 import ThreadForm from '@/components/ThreadForm';
+import { useSession } from 'next-auth/react';
 
 export  default function Home() {
   const router = useRouter();
@@ -16,6 +17,8 @@ export  default function Home() {
   const addMessage = useChatStore(state => state.addMessage);
   const { data: model } = useSWR('model', { fallbackData: 'gpt-3.5-turbo-1106' });
   const { setIsStreaming } = useChatStore();
+  const { data: session } = useSession();
+  const pathname = usePathname();
     // Updated fetcher function
     const fetcher = async (url: string) => {
       const response = await fetch(url, {
@@ -42,7 +45,12 @@ export  default function Home() {
 
   const sendMessage = async (message: string) => {
     if (!message.trim()) return;
-  
+    
+    if (session && session.error) {
+      router.push(`/api/auth/signin?callbackUrl=${pathname}`);
+      console.log("Refresh token is invalid")
+      return
+    }
     try {
       const response = await fetch('/api/createThread', { method: 'POST' });
       if (!response.ok) {
@@ -89,10 +97,10 @@ export  default function Home() {
     } catch (error) {
       // Narrow down the type to Error
       if (error instanceof Error) {
-        alert(error.message);
+        console.log(error.message);
       } else {
         // If it's not an Error instance, handle accordingly
-        alert('An unknown error occurred');
+        console.log('An unknown error occurred');
       } 
     }
   };
@@ -100,9 +108,6 @@ export  default function Home() {
 return (
     <div className="flex flex-col h-full justify-between text-gray-100 ">
       <Header />
-      <div className="container mx-auto flex flex-col justify-between items-center px-4 py-8">
-         <h2 className="text-2xl md:text-4xl font-semibold text-center md:text-left text-gray-300 text-shadow">Explore Suggested Topics or Ask Something New</h2>
-      </div>
       <div >
           <SuggestionsSection suggestions={parsedSuggestions} error={suggestionsError} loading={isLoading} sendMessage={sendMessage} />
           <ThreadForm prompt={prompt} setPrompt={setPrompt} sendMessage={sendMessage} />

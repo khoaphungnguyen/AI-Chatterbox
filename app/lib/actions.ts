@@ -41,7 +41,6 @@ export async function signup(
       });
   
       const data = await res.json();
-  
       if (res.ok) {
         redirect("/");
       } else {
