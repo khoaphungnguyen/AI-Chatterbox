@@ -15,7 +15,7 @@ export  default function Home() {
   const router = useRouter();
   const [prompt, setPrompt] = useState('');
   const addMessage = useChatStore(state => state.addMessage);
-  const { data: model } = useSWR('model', { fallbackData: 'gpt-3.5-turbo-1106' });
+  const { data: model } = useSWR('model', { fallbackData: 'default'});
   const { setIsStreaming } = useChatStore();
   const { data: session } = useSession();
   const pathname = usePathname();
@@ -26,7 +26,7 @@ export  default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ model: "gpt-3.5-turbo-1106" }),
+        body: JSON.stringify({ model: model }),
       });
       if (!response.ok) {
         const errorText = await response.text();
@@ -39,6 +39,7 @@ export  default function Home() {
       () => fetcher('/api/getSuggestions'), {
         shouldRetryOnError: false,
         revalidateOnFocus: false,
+        revalidateOnReconnect: false,
     });
   // Parse suggestions and handle errors
   const parsedSuggestions = suggestions ? JSON.parse(suggestions) : [];

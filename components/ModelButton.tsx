@@ -1,17 +1,16 @@
-import { BoltIcon, SparklesIcon } from "@heroicons/react/24/solid";
+import { BoltIcon, SparklesIcon ,FireIcon} from "@heroicons/react/24/solid";
 
 // Define a type for the props
 type ModelButtonProps = {
   label: string;
   isActive: boolean;
-  icon: 'bolt' | 'sparkles';
+  icon?: 'bolt' | 'sparkles'|'fire'; // Make the icon prop optional
   onClick: () => void;
 };
 
 const ModelButton = ({ label, isActive, icon, onClick }: ModelButtonProps) => {
-    const IconComponent = icon === 'bolt' ? BoltIcon : SparklesIcon;
-    const iconColor = icon === 'bolt' ? 'text-green-500' : 'text-purple-500';
-    
+  const IconComponent = icon === 'bolt' ? BoltIcon : icon === 'sparkles' ? SparklesIcon : FireIcon; 
+  const iconColor = icon === 'bolt' ? 'text-green-500' : icon === 'sparkles' ? 'text-purple-500' : 'text-red-500';    
     return (
       <button
         onClick={onClick} 

@@ -88,7 +88,7 @@ export default function SideNav() {
               <PlusIcon className="h-6 w-6"/>
               <h1 className="text-lg font-semibold">New Thread</h1>
             </div>
-              <div className="hidden">
+              <div className="">
                 <ModeSelection />
               </div>
               <div className="flex flex-col space-y-2 my-2">

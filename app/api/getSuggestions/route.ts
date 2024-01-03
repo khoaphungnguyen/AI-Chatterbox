@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
         'Content-Type': 'application/json',
         'Authorization': session ? `Bearer ${session?.accessToken}` : '',
       },
-      body: JSON.stringify({"model":model}),
+      body: JSON.stringify({"model": model}),
     });
 
     // Check if the response from the backend server is OK

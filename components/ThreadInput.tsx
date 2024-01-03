@@ -16,7 +16,7 @@ type ThreadInputProps = {
 function ThreadInput({ id }: ThreadInputProps) {
   const [prompt, setPrompt] = useState('');
   const addMessage = useChatStore(state => state.addMessage);
-  const { data: model } = useSWR('model', { fallbackData: 'gpt-3.5-turbo-1106' });
+  const { data: model } = useSWR('model', { fallbackData: 'default' });
   const { setIsStreaming } = useChatStore();
   const { data: session } = useSession();
   const router = useRouter();

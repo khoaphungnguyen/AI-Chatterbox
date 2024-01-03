@@ -8,14 +8,13 @@ import { useRouter, usePathname } from "next/navigation";
 
 const Header: React.FC = () => {
   const { data: model, mutate: setModel } = useSWR('model', {
-    fallbackData: 'gpt-3.5-turbo-1106' // Set the default or fallback model
+    fallbackData: 'default' // Set the default or fallback model
   });
   const { data: session } = useSession();
   const router = useRouter(); // Initialize useRouter
   const pathname = usePathname();
 
   const handleClick = (modelName: string) => {
-    console.log("session", session)
     if (session && session.error) {
       router.push(`/api/auth/signin?callbackUrl=${pathname}`);
       console.log("Refresh token is invalid")
@@ -38,11 +37,11 @@ const Header: React.FC = () => {
           </h1>
         </div>
         <div className="flex gap-4">
-          <ModelButton 
-            label="GPT 3.5" 
-            icon="bolt" 
-            isActive={model === 'gpt-3.5-turbo-1106'} 
-            onClick={() => handleClick('gpt-3.5-turbo-1106')}
+         <ModelButton 
+            label="Default" 
+            icon="fire" 
+            isActive={model === 'default'} 
+            onClick={() => handleClick('default')}
           />
           <ModelButton 
             label="GPT 4" 
@@ -50,11 +49,11 @@ const Header: React.FC = () => {
             isActive={model === 'gpt-4-1106-preview'} 
             onClick={() => handleClick('gpt-4-1106-preview')}
           />
-          <ModelButton 
-            label="Local" 
-            icon="sparkles" 
-            isActive={model === 'local'} 
-            onClick={() => handleClick('local')}
+           <ModelButton 
+            label="GPT 3.5" 
+            icon="bolt" 
+            isActive={model === 'gpt-3.5-turbo-1106'} 
+            onClick={() => handleClick('gpt-3.5-turbo-1106')}
           />
         </div>
       </div>
