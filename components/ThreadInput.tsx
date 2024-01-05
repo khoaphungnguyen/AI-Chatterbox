@@ -16,7 +16,7 @@ type ThreadInputProps = {
 function ThreadInput({ id }: ThreadInputProps) {
   const [prompt, setPrompt] = useState('');
   const addMessage = useChatStore(state => state.addMessage);
-  const { data: model } = useSWR('model', { fallbackData: 'default' });
+  const { data: model } = useSWR('model', { fallbackData: 'llama2:13b-chat' });
   const { setIsStreaming } = useChatStore();
   const { data: session } = useSession();
   const router = useRouter();

@@ -8,7 +8,7 @@ import { useRouter, usePathname } from "next/navigation";
 
 const Header: React.FC = () => {
   const { data: model, mutate: setModel } = useSWR('model', {
-    fallbackData: 'default' // Set the default or fallback model
+    fallbackData: 'llama2:13b-chat' // Set the default or fallback model
   });
   const { data: session } = useSession();
   const router = useRouter(); // Initialize useRouter
@@ -26,22 +26,28 @@ const Header: React.FC = () => {
   return (
     <header className="w-full px-4 py-4 sticky top-0 bg-gradient-to-r from-gray-800 to-gray-900 text-white shadow-md">
       <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
-        <div className="text-center md:text-left py-8 md:py-0">
-          <h1 className="text-2xl md:text-3xl font-semibold relative inline-block">
-            Smart
-            <span className="absolute top-2 transform translate-x-full 
-            -translate-y-full bg-yellow-500 text-yellow-900 px-2 py-1 
-            rounded-full text-sm md:text-base font-semibold animate-bounce">
-              Chat
-            </span>
-          </h1>
-        </div>
+        <div className="text-center md:text-left py-8 md:py-0 hidden md:flex">
+        <h1 className="text-2xl md:text-3xl font-semibold relative">
+          Smart
+          <span className="absolute top-2 transform translate-x-full 
+          -translate-y-full bg-yellow-500 text-yellow-900 px-2 py-1 
+          rounded-full text-sm md:text-base font-semibold animate-bounce">
+            Chat
+          </span>
+        </h1>
+      </div>
         <div className="flex gap-4">
          <ModelButton 
             label="Default" 
             icon="fire" 
-            isActive={model === 'default'} 
-            onClick={() => handleClick('default')}
+            isActive={model === 'llama2:13b-chat'} 
+            onClick={() => handleClick('llama2:13b-chat')}
+          />
+           <ModelButton 
+            label="GPT 3.5" 
+            icon="bolt" 
+            isActive={model === 'openchat'} 
+            onClick={() => handleClick('openchat')}
           />
           <ModelButton 
             label="GPT 4" 
@@ -50,10 +56,10 @@ const Header: React.FC = () => {
             onClick={() => handleClick('gpt-4-1106-preview')}
           />
            <ModelButton 
-            label="GPT 3.5" 
-            icon="bolt" 
-            isActive={model === 'gpt-3.5-turbo-1106'} 
-            onClick={() => handleClick('gpt-3.5-turbo-1106')}
+            label="Code" 
+            icon="code" 
+            isActive={model === 'codellama:13b'} 
+            onClick={() => handleClick('codellama:13b')}
           />
         </div>
       </div>

@@ -4,19 +4,13 @@ import {auth} from '../../../auth';
 export async function POST(req: NextRequest) {
   const session = await auth();
   try {
-    const { model } = await req.json();
-    if (!model) {
-      return NextResponse.json({ error: "Please provide model!" }, {status: 400,});
-    }
-    //console.log("session",session)
-
     const response = await fetch(`${process.env.BACKEND_URL}/protected/suggestions`, {
       method: 'POST',  
       headers: {
         'Content-Type': 'application/json',
         'Authorization': session ? `Bearer ${session?.accessToken}` : '',
       },
-      body: JSON.stringify({"model": model}),
+      body: JSON.stringify({"model": "mistral"}),
     });
 
     // Check if the response from the backend server is OK

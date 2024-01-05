@@ -3,11 +3,9 @@ import type { Config } from 'tailwindcss'
 const disabledCss = {
 	'code::before': false,
 	'code::after': false,
-//	'blockquote p:first-of-type::before': false,
-	'blockquote p:last-of-type::after': false,
 	pre: false,
 	code: false,
-	'pre code': false,
+  'pre code': false,
 }
 
 
@@ -25,13 +23,17 @@ const config: Config = {
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic':
-          'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+        'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
       typography: ({ theme }: any) => ({
         sky: {
           css: {
-            '--tw-prose-bold': theme('colors.sky[50]'),
-            '--tw-prose-counters': theme('colors.white'),
+            '--tw-prose-body': theme('colors.sky[800]'),
+            '--tw-prose-headings': theme('colors.sky[900]'),
+            '--tw-prose-lead': theme('colors.sky[700]'),
+            '--tw-prose-links': theme('colors.sky[900]'),
+            '--tw-prose-bold': theme('colors.sky[100]'),
+            '--tw-prose-counters': theme('colors.sky[50]'),
             '--tw-prose-bullets': theme('colors.sky[400]'),
             '--tw-prose-hr': theme('colors.sky[300]'),
             '--tw-prose-quotes': theme('colors.sky[900]'),

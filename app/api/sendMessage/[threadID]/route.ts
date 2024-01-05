@@ -8,7 +8,6 @@ export async function POST(req: NextRequest) {
 
   const authToken = await auth();
 
-
   try {
     // Forward the request to the backend server
     const response = await fetch(`${process.env.BACKEND_URL}/protected/chat/ask/${threadID}`, {

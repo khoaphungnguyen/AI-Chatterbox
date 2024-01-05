@@ -9,7 +9,7 @@ export async function POST(req: NextRequest){
             'Content-Type': 'application/json',
             'Authorization': authToken ? `Bearer ${authToken.accessToken}` : '',
           },
-          body: JSON.stringify({ "title": "New Chat" }),
+          body: JSON.stringify(await req.json()),
         });
 
         if (!response.ok){

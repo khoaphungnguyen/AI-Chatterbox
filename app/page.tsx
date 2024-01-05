@@ -15,7 +15,7 @@ export  default function Home() {
   const router = useRouter();
   const [prompt, setPrompt] = useState('');
   const addMessage = useChatStore(state => state.addMessage);
-  const { data: model } = useSWR('model', { fallbackData: 'default'});
+  const { data: model } = useSWR('model', { fallbackData: 'llama2:13b-chat'});
   const { setIsStreaming } = useChatStore();
   const { data: session } = useSession();
   const pathname = usePathname();
@@ -23,10 +23,6 @@ export  default function Home() {
     const fetcher = async (url: string) => {
       const response = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ model: model }),
       });
       if (!response.ok) {
         const errorText = await response.text();
@@ -53,7 +49,14 @@ export  default function Home() {
       return
     }
     try {
-      const response = await fetch('/api/createThread', { method: 'POST' });
+      const response = await fetch('/api/createThread', { 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message, model: model }),
+       });
+
       if (!response.ok) {
         throw new Error(`Failed to create thread: ${response.statusText}`);
       }

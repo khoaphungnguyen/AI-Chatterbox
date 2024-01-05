@@ -2,19 +2,26 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { ChatBubbleLeftIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { usePathname, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import useSWR from 'swr';
 
 type Props = {
   id: string;
   title: string;
+  model: string;
   onDelete: () => void;
 };
 
-function ThreadRow({ id, title, onDelete }: Props) {
+function ThreadRow({ id, title,model, onDelete }: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const [isToastVisible, setToastVisible] = useState(false); // To manage toast visibility
   const [active, setActive] = useState(false);
   const [isDeleteConfirmationVisible, setDeleteConfirmationVisible] = useState(false);
+  const { mutate: setModel } = useSWR('model');
+
+  const threadModel = model === 'llama2:13b-chat' ? 'Default' : model === 'gpt-4-1106-preview' ?
+   'GPT 4' : model === "openchat"? 'GPT 3.5' : 'Code';
+
 
   const handleDelete = useCallback(async () => {
     // Close any open toasts to prevent duplicates
@@ -125,10 +132,13 @@ function ThreadRow({ id, title, onDelete }: Props) {
         transition-all duration-200 ease-in-out flex justify-between ${
           active && 'bg-gray-700/50'
         }`}
-      onClick={() => router.push(`/thread/${id}`)}
+      onClick={() => {
+        setModel(model)
+        router.push(`/thread/${id}`)}
+      }
     >
       <ChatBubbleLeftIcon className='h-5 w-5' />
-      <p className='flex-1 truncate'>{title || 'New Thread'}</p>
+      <p className='flex-1 truncate'>{("["+threadModel+"] " + title || 'New Thread') + '...'}</p>
       <TrashIcon
         onClick={(e) => {
           e.stopPropagation(); // Prevent Link navigation

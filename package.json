@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@heroicons/react": "^2.0.18",
+    "@heroicons/react": "^2.1.1",
     "@tailwindcss/typography": "^0.5.10",
     "@types/react-copy-to-clipboard": "^5.0.7",
     "@types/react-syntax-highlighter": "^15.5.11",
