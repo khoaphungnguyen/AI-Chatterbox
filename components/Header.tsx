@@ -8,7 +8,7 @@ import { useRouter, usePathname } from "next/navigation";
 
 const Header: React.FC = () => {
   const { data: model, mutate: setModel } = useSWR('model', {
-    fallbackData: 'llama2:13b-chat' // Set the default or fallback model
+    fallbackData: 'llama2' // Set the default or fallback model
   });
   const { data: session } = useSession();
   const router = useRouter(); // Initialize useRouter
@@ -40,26 +40,26 @@ const Header: React.FC = () => {
          <ModelButton 
             label="Default" 
             icon="fire" 
-            isActive={model === 'llama2:13b-chat'} 
-            onClick={() => handleClick('llama2:13b-chat')}
+            isActive={model === 'llama2'} 
+            onClick={() => handleClick('llama2')}
           />
            <ModelButton 
-            label="GPT 3.5" 
+            label="Smart" 
             icon="bolt" 
-            isActive={model === 'openchat'} 
-            onClick={() => handleClick('openchat')}
-          />
-          <ModelButton 
-            label="GPT 4" 
-            icon="sparkles" 
-            isActive={model === 'gpt-4-1106-preview'} 
-            onClick={() => handleClick('gpt-4-1106-preview')}
+            isActive={model === 'zephyr'} 
+            onClick={() => handleClick('zephyr')}
           />
            <ModelButton 
             label="Code" 
             icon="code" 
-            isActive={model === 'codellama:13b'} 
-            onClick={() => handleClick('codellama:13b')}
+            isActive={model === 'codellama'} 
+            onClick={() => handleClick('codellama')}
+          />
+           <ModelButton 
+            label="GPT 4" 
+            icon="sparkles" 
+            isActive={model === 'gpt-4-1106-preview'} 
+            onClick={() => handleClick('gpt-4-1106-preview')}
           />
         </div>
       </div>

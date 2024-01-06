@@ -9,6 +9,7 @@ import useSWR from 'swr';
 import { useSession } from 'next-auth/react';
 import { useRouter, usePathname } from "next/navigation"; 
 
+
 type ThreadInputProps = {
   id: string;
 };
@@ -16,13 +17,20 @@ type ThreadInputProps = {
 function ThreadInput({ id }: ThreadInputProps) {
   const [prompt, setPrompt] = useState('');
   const addMessage = useChatStore(state => state.addMessage);
-  const { data: model } = useSWR('model', { fallbackData: 'llama2:13b-chat' });
-  const { setIsStreaming } = useChatStore();
+  const { data: model } = useSWR('model', { fallbackData: 'llama2' });
+  const { setIsStreaming, messages } = useChatStore();
   const { data: session } = useSession();
   const router = useRouter();
   const pathname = usePathname();
   const sendMessage = async (message: string) => {
-    if (!message.trim()) return;
+    const preContent: { role: string; content: string }[] = [];
+    messages.forEach(message => {
+        preContent.push({
+          role: message.role,
+          content: message.content
+        });
+    });
+    preContent.push({role: 'user', content: message});
     if (session && session.error) {
       router.push(`/api/auth/signin?callbackUrl=${pathname}`);
       console.log("Refresh token is invalid")
@@ -45,7 +53,7 @@ function ThreadInput({ id }: ThreadInputProps) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message, model: model }),
+        body: JSON.stringify({ messages: preContent, model: model }),
       });
 
       if (!response.ok) { 

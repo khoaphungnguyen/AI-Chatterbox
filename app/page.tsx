@@ -15,7 +15,7 @@ export  default function Home() {
   const router = useRouter();
   const [prompt, setPrompt] = useState('');
   const addMessage = useChatStore(state => state.addMessage);
-  const { data: model } = useSWR('model', { fallbackData: 'llama2:13b-chat'});
+  const { data: model } = useSWR('model', { fallbackData: 'llama2'});
   const { setIsStreaming } = useChatStore();
   const { data: session } = useSession();
   const pathname = usePathname();
@@ -74,14 +74,13 @@ export  default function Home() {
   
       addMessage(userMessage);
       setPrompt('');
-  
       try {
         const response = await fetch(`/api/sendMessage/${data.threadId.id}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ message, model: model }),
+          body: JSON.stringify({ messages:[{ role: 'user', content: message }], model: model }),
         });
   
         if (!response.ok) { 

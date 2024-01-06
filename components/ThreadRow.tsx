@@ -19,8 +19,8 @@ function ThreadRow({ id, title,model, onDelete }: Props) {
   const [isDeleteConfirmationVisible, setDeleteConfirmationVisible] = useState(false);
   const { mutate: setModel } = useSWR('model');
 
-  const threadModel = model === 'llama2:13b-chat' ? 'Default' : model === 'gpt-4-1106-preview' ?
-   'GPT 4' : model === "openchat"? 'GPT 3.5' : 'Code';
+  const threadModel = model === 'llama2' ? 'Default' : model === 'gpt-4-1106-preview' ?
+   'GPT 4' : model === "zephyr"? 'Smart' : 'Code';
 
 
   const handleDelete = useCallback(async () => {

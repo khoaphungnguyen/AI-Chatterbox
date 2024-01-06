@@ -12,15 +12,15 @@ type OptionType = {
 function ModeSelection() {
   // Use SWR for managing the selected model state if needed
   const { data: model, mutate: setModel} = useSWR('model', {
-    fallbackData: 'llama2:13b-chat' // Set the default or fallback model
+    fallbackData: 'llama2' // Set the default or fallback model
   });
 
   // Directly define the models you want to use as options
   const modelOptions = [
-    { value: 'llama2:13b-chat', label: 'Default' },
-    { value: 'openchat', label: 'GPT-3.5' },
-    { value: 'gpt-4-1106-preview', label: 'GPT-4' },
-    { value: 'codellama:13b', label: 'Code'}
+    { value: 'llama2', label: 'Default' },
+    { value: 'zephyr', label: 'Smart' },
+    { value: 'codellama', label: 'Code'},
+    { value: 'gpt-4-1106-preview', label: 'GPT-4' }
   ];
 
   // Handler for when a new model is selected

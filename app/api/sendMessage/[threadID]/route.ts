@@ -8,6 +8,11 @@ export async function POST(req: NextRequest) {
 
   const authToken = await auth();
 
+  const body = await req.json();
+
+  const messages = body.messages;
+  const model = body.model;
+
   try {
     // Forward the request to the backend server
     const response = await fetch(`${process.env.BACKEND_URL}/protected/chat/ask/${threadID}`, {
@@ -16,7 +21,7 @@ export async function POST(req: NextRequest) {
         'Content-Type': 'application/json',
         'Authorization': authToken ? `Bearer ${authToken.accessToken}` : '',
       },
-      body: await req.text(),
+      body: JSON.stringify({ messages: messages, model: model }),
     });
 
     // Check if the response from the backend server is OK
