@@ -12,9 +12,29 @@ export async function POST(req: NextRequest) {
 
   const messages = body.messages;
   const model = body.model;
+  const stop = body.stopStreaming;
 
   try {
     // Forward the request to the backend server
+    if (stop) {
+      const response = await fetch(`${process.env.BACKEND_URL}/protected/chat/ask/${threadID}?stop=true`, {
+        method: 'POST', 
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': authToken ? `Bearer ${authToken.accessToken}` : '',
+        },
+      });
+    
+      if (!response.ok) {
+        throw new Error(`Error stop streaming: ${response.statusText}`);
+      }
+    
+       // Parse the response data
+    const data = await response.json();
+    // Return the parsed data as a JSON response
+    return NextResponse.json({ data: data }, { status: 200 });
+
+    } else {
     const response = await fetch(`${process.env.BACKEND_URL}/protected/chat/ask/${threadID}`, {
       method: 'POST',  
       headers: {
@@ -31,10 +51,9 @@ export async function POST(req: NextRequest) {
 
     // Parse the response data
     const data = await response.json();
-
     // Return the parsed data as a JSON response
     return NextResponse.json({ data: data }, { status: 200 });
-
+  }
   } catch (error) {
     // Log the error and return a server error response
     console.error('Error backend server:', error);

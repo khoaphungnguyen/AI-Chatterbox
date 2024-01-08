@@ -28,7 +28,7 @@ const Thread: React.FC<ThreadProps> = ({ id }) => {
     shouldRetryOnError: false,
   });
 
-  const { messages, addMessage, updateMessage, error, reset } = useChatStore();
+  const { messages, addMessage, updateMessage, reset } = useChatStore();
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {

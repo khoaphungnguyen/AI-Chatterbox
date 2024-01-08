@@ -20,7 +20,7 @@ export  default function Home() {
   const { data: session } = useSession();
   const pathname = usePathname();
     // Updated fetcher function
-    const fetcher = async (url: string) => {
+  const fetcher = async (url: string) => {
       const response = await fetch(url, {
         method: 'POST',
       });
@@ -31,7 +31,7 @@ export  default function Home() {
       return response.json(); 
     };
   
-    const { data: suggestions, error: suggestionsError, isLoading } = useSWR(['/api/getSuggestions', model], 
+  const { data: suggestions, error: suggestionsError, isLoading } = useSWR(['/api/getSuggestions', model], 
       () => fetcher('/api/getSuggestions'), {
         shouldRetryOnError: false,
         revalidateOnFocus: false,
@@ -39,6 +39,29 @@ export  default function Home() {
     });
   // Parse suggestions and handle errors
   const parsedSuggestions = suggestions ? JSON.parse(suggestions) : [];
+
+  const stopStreaming = async () => {
+    try {
+      console.log("Stop streaming:", pathname)
+      const response = await fetch(`/api/sendMessage/${pathname}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({stopStreaming: true}),
+      });
+      setIsStreaming(false);
+      if (!response.ok) {
+        toast.error("Failed to stop streaming.");
+      }
+    }catch (error) {
+      if (error instanceof Error) {
+        toast.error(`An error occurred: ${error.message}`);
+      } else {
+        toast.error("An error occurred.");
+      }
+    }
+  }
 
   const sendMessage = async (message: string) => {
     if (!message.trim()) return;
@@ -113,7 +136,7 @@ return (
       <Header />
       <div >
           <SuggestionsSection suggestions={parsedSuggestions} error={suggestionsError} loading={isLoading} sendMessage={sendMessage} />
-          <ThreadForm prompt={prompt} setPrompt={setPrompt} sendMessage={sendMessage} />
+          <ThreadForm prompt={prompt} setPrompt={setPrompt} sendMessage={sendMessage} stopStreaming={stopStreaming} />
       </div>
     </div>
   );

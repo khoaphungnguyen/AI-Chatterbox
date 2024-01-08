@@ -78,7 +78,7 @@ export default function SideNav() {
 
       {isOpen ? (
        <div
-       className={`fixed z-30 inset-y-0 left-0 w-1/3 overflow-hidden transition-all duration-300 ${sidebarClasses}`}
+       className={`fixed z-30 inset-y-0 left-0 w-1/2 sm:w-1/3  overflow-hidden transition-all duration-300 ${sidebarClasses}`}
      >
        {/* Sidebar content */}
        <div className="flex flex-col h-screen p-4 overflow-y-auto bg-[#20232b]/50  shadow-md">

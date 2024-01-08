@@ -12,8 +12,8 @@ export default async function RootLayout({
   return (
     <html lang="en" className="h-full bg-gray-900">
           <head>
-          <link rel="icon" href="/favicon.svg" type="image/svg" sizes="32x32" />     
-      </head>
+          <link rel="icon" href="/favicon.svg" sizes="any" />  
+          </head>
           <body className="h-full">
             <Providers session={session} >
               

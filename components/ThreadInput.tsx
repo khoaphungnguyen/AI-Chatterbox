@@ -17,11 +17,34 @@ type ThreadInputProps = {
 function ThreadInput({ id }: ThreadInputProps) {
   const [prompt, setPrompt] = useState('');
   const addMessage = useChatStore(state => state.addMessage);
-  const { data: model } = useSWR('model', { fallbackData: 'llama2' });
+  const { data: model } = useSWR('model', { fallbackData: 'llama2 ' });
   const { setIsStreaming, messages } = useChatStore();
   const { data: session } = useSession();
   const router = useRouter();
   const pathname = usePathname();
+
+  const stopStreaming = async () => {
+    try {
+      const response = await fetch(`/api/sendMessage/${id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({stopStreaming: true}),
+      });
+      setIsStreaming(false);
+      if (!response.ok) {
+        toast.error("Failed to stop streaming.");
+      }
+    }catch (error) {
+      if (error instanceof Error) {
+        toast.error(`An error occurred: ${error.message}`);
+      } else {
+        toast.error("An error occurred.");
+      }
+    }
+  }
+
   const sendMessage = async (message: string) => {
     const preContent: { role: string; content: string }[] = [];
     messages.forEach(message => {
@@ -71,7 +94,7 @@ function ThreadInput({ id }: ThreadInputProps) {
   };
 
   return (
-    <ThreadForm  prompt={prompt} setPrompt={setPrompt} sendMessage={() => sendMessage(prompt)}  />
+    <ThreadForm  prompt={prompt} setPrompt={setPrompt} sendMessage={() => sendMessage(prompt)}  stopStreaming={stopStreaming} />
   );
 }
 

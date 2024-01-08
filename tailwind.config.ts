@@ -29,7 +29,7 @@ const config: Config = {
         sky: {
           css: {
             '--tw-prose-body': theme('colors.sky[800]'),
-            '--tw-prose-headings': theme('colors.sky[900]'),
+            '--tw-prose-headings': theme('colors.sky[50]'),
             '--tw-prose-lead': theme('colors.sky[700]'),
             '--tw-prose-links': theme('colors.sky[900]'),
             '--tw-prose-bold': theme('colors.sky[100]'),

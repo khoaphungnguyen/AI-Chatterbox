@@ -7,10 +7,11 @@ interface ThreadFormProps {
   prompt: string;
   setPrompt: React.Dispatch<React.SetStateAction<string>>;
   sendMessage: (message: string) => void;
+  stopStreaming: () => void;
 
 }
 
-const ThreadForm: React.FC<ThreadFormProps> = ({ prompt, setPrompt, sendMessage }) => {
+const ThreadForm: React.FC<ThreadFormProps> = ({ prompt, setPrompt, sendMessage, stopStreaming }) => {
   const { isStreaming } = useChatStore();
  
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -26,13 +27,24 @@ const ThreadForm: React.FC<ThreadFormProps> = ({ prompt, setPrompt, sendMessage 
   };
 
   return (
-    <div className="w-full py-10  rounded-lg shadow-md">
-    <form onSubmit={handleSubmit} className="relative flex items-center justify-between max-w-3xl mx-auto rounded-lg">
+    <div className="w-full py-10 rounded-lg shadow-md">
+    {isStreaming && (
+      <div className="flex justify-center">
+        <button
+           onClick={stopStreaming} 
+          className="mb-2 px-4 py-2 text-base font-medium text-white 
+          bg-red-500 hover:bg-red-600 rounded focus:outline-none focus:ring-2 focus:ring-red-400"
+        >
+          Stop Generating
+        </button>
+      </div>
+    )}
+    <form onSubmit={handleSubmit} className="relative flex flex-col items-center justify-between max-w-3xl mx-auto rounded-lg">
       <TextareaAutosize
         minRows={1} 
         maxRows={6} 
         className="w-full p-4 pr-16 text-base lg:text-lg text-white placeholder-gray-400 rounded-xl
-         bg-gray-700 focus:outline-none border border-gray-700 resize-none"
+        bg-gray-700 focus:outline-none border border-gray-700 resize-none"
         placeholder="Send your message..."
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
@@ -40,20 +52,22 @@ const ThreadForm: React.FC<ThreadFormProps> = ({ prompt, setPrompt, sendMessage 
       />
       <Transition in={isStreaming} timeout={500}>
         {(state) => (
-          <button
-            type="submit"
-            disabled={!prompt}
-            className={`absolute right-4 top-1/2 transform -translate-y-1/2 transition duration-500 
-            ease-in-out hover:-translate-y-1/2 hover:scale-110 px-4 py-2 text-base font-medium text-blue-500 
-            rounded disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-400 
-            h-14 disabled:cursor-not-allowed ${isStreaming ? 'animate-pulse' : ''}`}
-          >
-            {state === 'entering' || state === 'entered' ? (
-              <div className="animate-bounce text-4xl">...</div>
-            ) : (
-              <PaperAirplaneIcon className="w-7 h-7 text-blue-500 hover:text-blue-600" />
-            )}
-          </button>
+          <>
+            <button
+              type="submit"
+              disabled={!prompt}
+              className={`absolute right-4 top-1/2 transform -translate-y-1/2 transition duration-500 
+              ease-in-out hover:-translate-y-1/2 hover:scale-110 px-4 py-2 text-base font-medium text-blue-500 
+              rounded disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-400 
+              h-14 disabled:cursor-not-allowed ${isStreaming ? 'animate-pulse' : ''}`}
+            >
+              {state === 'entering' || state === 'entered' ? (
+                <div className="animate-bounce text-4xl">...</div>
+              ) : (
+                <PaperAirplaneIcon className="w-7 h-7 text-blue-500 hover:text-blue-600" />
+              )}
+            </button>
+          </>
         )}
       </Transition>
     </form>

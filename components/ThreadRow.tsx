@@ -20,7 +20,7 @@ function ThreadRow({ id, title,model, onDelete }: Props) {
   const { mutate: setModel } = useSWR('model');
 
   const threadModel = model === 'llama2' ? 'Default' : model === 'gpt-4-1106-preview' ?
-   'GPT 4' : model === "zephyr"? 'Smart' : 'Code';
+   'GPT 4' : model === "openhermes"? 'Smart' : 'Code';
 
 
   const handleDelete = useCallback(async () => {

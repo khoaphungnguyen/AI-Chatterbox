@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
         'Content-Type': 'application/json',
         'Authorization': session ? `Bearer ${session?.accessToken}` : '',
       },
-      body: JSON.stringify({"model": "mistral"}),
+      body: JSON.stringify({"model": "gpt-3.5-turbo-1106"}),
     });
 
     // Check if the response from the backend server is OK
