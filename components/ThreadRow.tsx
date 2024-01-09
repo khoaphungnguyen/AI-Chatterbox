@@ -11,22 +11,15 @@ type Props = {
   onDelete: () => void;
 };
 
-function ThreadRow({ id, title,model, onDelete }: Props) {
+function ThreadRow({ id, title, model, onDelete }: Props) {
   const pathname = usePathname();
   const router = useRouter();
-  const [isToastVisible, setToastVisible] = useState(false); // To manage toast visibility
-  const [active, setActive] = useState(false);
-  const [isDeleteConfirmationVisible, setDeleteConfirmationVisible] = useState(false);
   const { mutate: setModel } = useSWR('model');
-
+  const [active, setActive] = useState(false);
   const threadModel = model === 'gpt-3.5-turbo-1106' ? 'Default' : model === 'gpt-4-1106-preview' ?
    'GPT 4' : model === "openhermes"? 'Fast' : 'Code';
 
-
-  const handleDelete = useCallback(async () => {
-    // Close any open toasts to prevent duplicates
-    toast.dismiss();
-
+   const handleDelete = useCallback(async () => {
     try {
       const response = await fetch(`/api/deleteThread/${id}`, { method: 'DELETE' });
       if (!response.ok) {
@@ -34,97 +27,58 @@ function ThreadRow({ id, title,model, onDelete }: Props) {
       }
       onDelete();
       toast.success('Thread deleted successfully');
-
-      // Fallback method to check the current URL if router does not provide it
+  
       const currentPath = window.location.pathname;
       if (currentPath === `/thread/${id}`) {
         router.push('/');
       }
     } catch (error) {
-      // Error handling
+      toast.error('Failed to delete thread');
     } finally {
-      setToastVisible(false);
+      toast.dismiss(`delete-confirmation-${id}`);
     }
   }, [id, onDelete, router]);
-
-  const handleKeyDown = useCallback((event: KeyboardEvent) => { 
-    if (event.key === 'Enter' && isDeleteConfirmationVisible) {
-      handleDelete();
-    }
-  }, [isDeleteConfirmationVisible, handleDelete]);
-
-  useEffect(() => {
-    if (isDeleteConfirmationVisible) {
-      document.addEventListener('keydown', handleKeyDown);
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isDeleteConfirmationVisible, handleKeyDown]);
+  
+  const showDeleteConfirmation = () => {
+    toast((t) => (
+      <div className="flex justify-center items-center p-4 max-w-md w-full bg-white rounded-lg shadow-xl">
+        <div className="text-center">
+          <h3 className="mb-5 text-lg font-bold text-gray-900">
+            Confirm Deletion
+          </h3>
+          <p className="mb-5 text-sm text-gray-600">
+            Are you sure you want to delete this thread? This action cannot be undone.
+          </p>
+          <div className="flex justify-center gap-4">
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+              }}
+              className="text-sm bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-6 rounded-md transition duration-150 ease-in-out"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDelete}
+              className="text-sm bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-6 rounded-md transition duration-150 ease-in-out"
+              autoFocus
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    ), {
+      duration: Infinity,
+      position: "top-center",
+      id: `delete-confirmation-${id}`,
+    });
+  };
 
   useEffect(() => {
     setActive(pathname.includes(id));
   }, [pathname, id]);
 
-  const showDeleteConfirmation = () => {
-    if (isToastVisible) {
-      // If a toast is already visible, do nothing
-      return;
-    }
-  
-    setToastVisible(true); // Indicate that a toast will be visible
-    setDeleteConfirmationVisible(true);
-    toast(
-      (t) => (
-        <div className="flex justify-center items-center p-4 max-w-md w-full bg-white rounded-lg shadow-xl">
-          <div className="text-center">
-            <h3 className="mb-5 text-lg font-bold text-gray-900">
-              Confirm Deletion
-            </h3>
-            <p className="mb-5 text-sm text-gray-600">
-              Are you sure you want to delete this thread? This action cannot be undone.
-            </p>
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={() => {
-                  setDeleteConfirmationVisible(false);
-                  toast.dismiss(t.id);
-                }}
-                className="text-sm bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-6 rounded-md transition duration-150 ease-in-out"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  setDeleteConfirmationVisible(false);
-                  toast.dismiss(t.id);
-                  handleDelete(); // Call handleDelete directly without checking isDeleteConfirmationVisible
-                }}
-                className="text-sm bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-6 rounded-md transition duration-150 ease-in-out"
-                autoFocus
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      ),
-      {
-        duration: Infinity,
-        position: "top-center",
-        id: `delete-confirmation-${id}`,
-      }
-    );
-  };
-
-  useEffect(() => {
-    if (!isToastVisible) {
-      // If a toast is not visible, set deleteConfirmationVisible to false
-      setDeleteConfirmationVisible(false);
-    }
-  }, [isToastVisible]);
-  
   return (
     <div
       className={`rounded-lg px-5 py-3 text-sm items-center
@@ -151,3 +105,5 @@ function ThreadRow({ id, title,model, onDelete }: Props) {
 }
 
 export default ThreadRow;
+
+
