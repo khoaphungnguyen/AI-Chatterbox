@@ -15,11 +15,10 @@ export  default function Home() {
   const router = useRouter();
   const [prompt, setPrompt] = useState('');
   const addMessage = useChatStore(state => state.addMessage);
-  const { data: model } = useSWR('model', { fallbackData: 'llama2'});
+  const { data: model } = useSWR('model', { fallbackData: 'gpt-3.5-turbo-1106'});
   const { setIsStreaming } = useChatStore();
   const { data: session } = useSession();
   const pathname = usePathname();
-    // Updated fetcher function
   const fetcher = async (url: string) => {
       const response = await fetch(url, {
         method: 'POST',

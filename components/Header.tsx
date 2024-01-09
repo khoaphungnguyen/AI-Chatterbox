@@ -8,7 +8,7 @@ import { useRouter, usePathname } from "next/navigation";
 
 const Header: React.FC = () => {
   const { data: model, mutate: setModel } = useSWR('model', {
-    fallbackData: 'llama2' // Set the default or fallback model
+    fallbackData: 'gpt-3.5-turbo-1106' 
   });
   const { data: session } = useSession();
   const router = useRouter(); // Initialize useRouter
@@ -40,8 +40,8 @@ const Header: React.FC = () => {
          <ModelButton 
             label="Default" 
             icon="fire" 
-            isActive={model === 'llama2'} 
-            onClick={() => handleClick('llama2')}
+            isActive={model === 'gpt-3.5-turbo-1106'} 
+            onClick={() => handleClick('gpt-3.5-turbo-1106')}
           />
            <ModelButton 
             label="Smart" 
