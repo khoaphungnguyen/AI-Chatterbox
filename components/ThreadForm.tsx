@@ -30,14 +30,14 @@ const ThreadForm: React.FC<ThreadFormProps> = ({ prompt, setPrompt, sendMessage,
     <div className="w-full py-10 rounded-lg shadow-md">
     {isStreaming && (
       <div className="flex justify-center">
-        <button
-           onClick={stopStreaming} 
-          className="mb-2 px-4 py-2 text-base font-medium text-white 
-          bg-red-500 hover:bg-red-600 rounded focus:outline-none focus:ring-2 focus:ring-red-400"
-        >
-          Stop Generating
-        </button>
-      </div>
+      <button
+        onClick={stopStreaming} 
+        className="mb-2 px-4 py-2 text-base font-medium text-white 
+        bg-red-500 hover:bg-red-600 rounded focus:outline-none"
+      >
+        Stop Generating
+      </button>
+    </div>
     )}
     <form onSubmit={handleSubmit} className="relative flex flex-col items-center justify-between max-w-3xl mx-auto rounded-lg">
       <TextareaAutosize

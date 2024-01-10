@@ -4,7 +4,7 @@ import ModelButton from "./ModelButton";
 import useSWR from 'swr';
 import {useSession} from 'next-auth/react';
 import { useRouter, usePathname } from "next/navigation"; 
-
+import Link from 'next/link'
 
 const Header: React.FC = () => {
   const { data: model, mutate: setModel } = useSWR('model', {
@@ -23,11 +23,15 @@ const Header: React.FC = () => {
     setModel(modelName);
   };
 
+
+
   return (
     <header className="w-full px-4 py-4 sticky top-0 bg-gradient-to-r from-gray-800 to-gray-900 text-white shadow-md">
-      <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
-        <div className="text-center md:text-left py-8 md:py-0 hidden md:flex">
-        <h1 className="text-2xl md:text-3xl font-semibold relative">
+    <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
+      <div className="text-center md:text-left py-8 md:py-0 hidden md:flex items-center">
+
+        <div className="flex space-x-20" >
+        <h1 className="text-2xl md:text-3xl font-semibold relative mr-4">
           Smart
           <span className="absolute top-2 transform translate-x-full 
           -translate-y-full bg-yellow-500 text-yellow-900 px-2 py-1 
@@ -35,35 +39,48 @@ const Header: React.FC = () => {
             Chat
           </span>
         </h1>
-      </div>
-        <div className="flex gap-4">
-         <ModelButton 
-            label="Default" 
-            icon="fire" 
-            isActive={model === 'gpt-3.5-turbo-1106'} 
-            onClick={() => handleClick('gpt-3.5-turbo-1106')}
-          />
-           <ModelButton 
-            label="Smart" 
-            icon="bolt" 
-            isActive={model === 'openhermes'} 
-            onClick={() => handleClick('openhermes')}
-          />
-           <ModelButton 
-            label="Code" 
-            icon="code" 
-            isActive={model === 'codellama'} 
-            onClick={() => handleClick('codellama')}
-          />
-           <ModelButton 
-            label="GPT 4" 
-            icon="sparkles" 
-            isActive={model === 'gpt-4-1106-preview'} 
-            onClick={() => handleClick('gpt-4-1106-preview')}
-          />
+        <ul className="flex p-2 space-x-2 text-lg  font-semibold text-white">
+        <li className="hover:text-blue-600">
+          <Link href="todolist">TodoList</Link>
+        </li>
+        <li className="hover:text-blue-600">
+          <Link href="/">Calendar</Link>
+        </li>
+        <li className="hover:text-blue-600">
+          <Link href="/">Features</Link>
+        </li>
+      </ul>
         </div>
+
       </div>
-    </header>
+      <div className="flex gap-4">
+        <ModelButton 
+          label="Default" 
+          icon="fire" 
+          isActive={model === 'gpt-3.5-turbo-1106'} 
+          onClick={() => handleClick('gpt-3.5-turbo-1106')}
+        />
+        <ModelButton 
+          label="Smart" 
+          icon="bolt" 
+          isActive={model === 'openhermes'} 
+          onClick={() => handleClick('openhermes')}
+        />
+        <ModelButton 
+          label="Code" 
+          icon="code" 
+          isActive={model === 'codellama'} 
+          onClick={() => handleClick('codellama')}
+        />
+        <ModelButton 
+          label="GPT 4" 
+          icon="sparkles" 
+          isActive={model === 'gpt-4-1106-preview'} 
+          onClick={() => handleClick('gpt-4-1106-preview')}
+        />
+      </div>
+    </div>
+  </header>
   );
 };
 

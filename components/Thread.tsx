@@ -104,7 +104,7 @@ const Thread: React.FC<ThreadProps> = ({ id }) => {
     <div ref={chatContainerRef} className="flex-1 mt-10 overflow-y-scroll overflow-x-hidden">
     {messages.length > 0 && (
       messages.map((message) => (  
-          <Message key={`message-${message.id}`} message={message}/>
+          <Message key={`message-${message.id}`} message={message} id={id}/>
       ))
     )}
   </div>

@@ -32,7 +32,7 @@ const config: Config = {
             '--tw-prose-headings': theme('colors.sky[50]'),
             '--tw-prose-lead': theme('colors.sky[700]'),
             '--tw-prose-links': theme('colors.sky[900]'),
-            '--tw-prose-bold': theme('colors.sky[100]'),
+            '--tw-prose-bold': theme('colors.sky[50]'),
             '--tw-prose-counters': theme('colors.sky[50]'),
             '--tw-prose-bullets': theme('colors.sky[400]'),
             '--tw-prose-hr': theme('colors.sky[300]'),
