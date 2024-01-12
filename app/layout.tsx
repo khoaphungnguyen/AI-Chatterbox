@@ -1,4 +1,5 @@
 import "./globals.css";
+import "@tldraw/tldraw/tldraw.css"
 import SideBar from "@/components/SideBar";
 import ClientProvider from "@/components/ClientProvider";
 import Providers from "@/components/SessionProvider";

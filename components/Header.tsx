@@ -44,7 +44,7 @@ const Header: React.FC = () => {
           <Link href="todolist">TodoList</Link>
         </li>
         <li className="hover:text-blue-600">
-          <Link href="/">Calendar</Link>
+          <Link href="/draw">AI-Draw</Link>
         </li>
         <li className="hover:text-blue-600">
           <Link href="/">Features</Link>
@@ -61,7 +61,7 @@ const Header: React.FC = () => {
           onClick={() => handleClick('gpt-3.5-turbo-1106')}
         />
         <ModelButton 
-          label="Smart" 
+          label="Fast" 
           icon="bolt" 
           isActive={model === 'openhermes'} 
           onClick={() => handleClick('openhermes')}
