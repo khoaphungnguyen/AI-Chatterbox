@@ -3,20 +3,19 @@ import fetch from 'node-fetch';
 import {auth} from '../../../auth';
 export async function POST(req: NextRequest) {
   const session = await auth();
-
   const {image} = await req.json();
 
   if (!image){
     return NextResponse.json({error: "No image provided"}, { status: 400 });
   }
   try {
-    const response = await fetch(`${process.env.BACKEND_URL}/protected/`, {
+    const response = await fetch(`${process.env.BACKEND_URL}/protected/drawings`, {
       method: 'POST',  
       headers: {
         'Content-Type': 'application/json',
         'Authorization': session ? `Bearer ${session?.accessToken}` : '',
       },
-      body: JSON.stringify({image: image}),
+      body: JSON.stringify({imageURL: image}),
     });
 
     // Check if the response from the backend server is OK

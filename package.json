@@ -11,7 +11,7 @@
   "dependencies": {
     "@heroicons/react": "^2.1.1",
     "@tailwindcss/typography": "^0.5.10",
-    "@tldraw/tldraw": "beta",
+    "@tldraw/tldraw": "2.0.0-alpha.17",
     "@types/react-copy-to-clipboard": "^5.0.7",
     "@types/react-syntax-highlighter": "^15.5.11",
     "@types/uuid": "^9.0.7",
@@ -24,6 +24,7 @@
     "next-auth": "beta",
     "npm": "^10.2.5",
     "openai": "^4.14.1",
+    "primejs": "^0.1.1",
     "prism-react-renderer": "^2.3.0",
     "react": "^18",
     "react-copy-to-clipboard": "^5.1.0",

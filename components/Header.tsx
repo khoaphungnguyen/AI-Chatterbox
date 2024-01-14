@@ -23,8 +23,6 @@ const Header: React.FC = () => {
     setModel(modelName);
   };
 
-
-
   return (
     <header className="w-full px-4 py-4 sticky top-0 bg-gradient-to-r from-gray-800 to-gray-900 text-white shadow-md">
     <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
