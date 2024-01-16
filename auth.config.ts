@@ -36,6 +36,8 @@ export const authConfig = {
         token.id = user.id;
         token.name = user.name;
         token.expiresIn = user.expiresIn;
+        token.email = user.email;
+        token.role = user.role;
       // Add access_token to the token right after signup
       }  else{
         const time = Math.floor(Date.now() / 1000)
@@ -68,7 +70,9 @@ export const authConfig = {
       if (session) {
         session.accessToken = token.accessToken as string;
         session.user.name = token.name;
-        session.error = token.error;        
+        session.user.email = token.email;
+        session.error = token.error;    
+        session.user.role = token.role;    
       }
       return session;
     },

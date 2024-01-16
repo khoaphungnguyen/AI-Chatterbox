@@ -45,7 +45,7 @@ const ThreadForm: React.FC<ThreadFormProps> = ({ prompt, setPrompt, sendMessage,
         maxRows={6} 
         className="w-full p-4 pr-16 text-base lg:text-lg text-white placeholder-gray-400 rounded-xl
         bg-gray-700 focus:outline-none border border-gray-700 resize-none"
-        placeholder="Send your message..."
+        placeholder="Ask your question..."
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
         onKeyDown={handleKeyDown}

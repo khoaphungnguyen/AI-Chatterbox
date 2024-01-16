@@ -18,11 +18,13 @@ declare module 'next-auth' {
     accessToken?: string;
     refreshToken?: string;
     expiresIn?: number;
+    role?: string;
   }
   // Extend the Session type
   interface Session {
     user: {
       id: string
+      role?: string
     } & DefaultSession["user"] // Make sure the user in Session is of the extended User type
     accessToken?: string;
     expiresIn?: number;
@@ -38,5 +40,6 @@ declare module '@auth/core/jwt' {
     expiresIn?: number;
     id?: string;
     error?: "RefreshAccessTokenError"
+    role?: string;
   }
 }

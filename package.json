@@ -9,13 +9,16 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@headlessui/react": "^1.7.18",
     "@heroicons/react": "^2.1.1",
     "@tailwindcss/typography": "^0.5.10",
     "@tldraw/tldraw": "2.0.0-alpha.17",
+    "@tremor/react": "^3.13.1",
     "@types/react-copy-to-clipboard": "^5.0.7",
     "@types/react-syntax-highlighter": "^15.5.11",
     "@types/uuid": "^9.0.7",
     "@vercel/analytics": "^1.1.1",
+    "avvvatars-react": "^0.4.2",
     "cookie": "^0.6.0",
     "depcheck": "^1.4.7",
     "install": "^0.13.0",
