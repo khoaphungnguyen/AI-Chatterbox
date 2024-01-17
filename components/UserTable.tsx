@@ -1,33 +1,91 @@
-import { Search, SearchIcon } from "lucide-react";
-import React from "react";
+"use client";
+import React, { useState, useMemo, useEffect } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeaderCell,
+  TableRow,
+  Text,
+} from "@tremor/react";
 
-function UserTable() {
-  return (
-    <div className="relative mt-5 max-w-md">
-      <label htmlFor="search" className="sr-only">
-        Search
-      </label>
-      <div className="rounded-md shadow-sm">
-        <div
-          className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"
-          aria-hidden="true"
-        >
-          <SearchIcon
-            className="mr-3 h-4 w-4 text-gray-400"
-            aria-hidden="true"
-          />
-        </div>
-        <input
-          type="text"
-          name="search"
-          id="search"
-          className="h-10 block w-full rounded-md border border-gray-200 pl-9 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-          placeholder="Search by name..."
-          spellCheck={false}
-        />
-      </div>
-    </div>
-  );
+interface User {
+  fullName: string;
+  email: string;
+  emailVerified: boolean;
+  createdAt: string;
+  lastLogin: string;
 }
 
-export default UserTable;
+export default function UsersTable({ searchTerm }: { searchTerm: string }) {
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch("/api/getUsers");
+        if (!response.ok) {
+          throw new Error("Failed to fetch users");
+        }
+        const data = await response.json();
+        return data.data;
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+    fetchUsers().then((data) => setUsers(data));
+  }, []);
+
+  const memoizedUsers = useMemo(() => {
+    if (!searchTerm) {
+      return users;
+    }
+
+    return users.filter((user) =>
+      user.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [users, searchTerm]);
+
+  console.log(memoizedUsers);
+  return (
+    <Table>
+      <TableHead>
+        <TableRow>
+          <TableHeaderCell>Name</TableHeaderCell>
+          <TableHeaderCell>Email</TableHeaderCell>
+          <TableHeaderCell>Verified</TableHeaderCell>
+          <TableHeaderCell>Created At</TableHeaderCell>
+          <TableHeaderCell>Last Login</TableHeaderCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {memoizedUsers?.map((user: User) => (
+          <TableRow key={user.email}>
+            <TableCell>{user.fullName}</TableCell>
+            <TableCell>
+              <Text>{user.email}</Text>
+            </TableCell>
+            <TableCell>
+              {user.emailVerified === true ? "True" : "False"}
+            </TableCell>
+            <TableCell>
+              <Text>
+                {new Intl.DateTimeFormat("en-US").format(
+                  new Date(user.createdAt)
+                )}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text>
+                {new Intl.DateTimeFormat("en-US").format(
+                  new Date(user.lastLogin)
+                )}
+              </Text>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
