@@ -24,19 +24,19 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="w-full px-4 py-4 sticky top-0 bg-gradient-to-r from-gray-800 to-gray-900 text-white shadow-md">
-      <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
-        <div className="text-center md:text-left py-8 md:py-0 hidden md:flex items-center">
-          <div className="flex space-x-20">
-            <ul className="flex p-2 space-x-2 text-lg  font-semibold text-white">
-            <li className="hover:text-blue-600">
+    <header className="w-full px-4 py-2 md:py-4 lg:py-6 sticky top-0 bg-gradient-to-r from-gray-800 to-gray-900 text-white shadow-md">
+      <div className="container mx-auto flex flex-col md:flex-row lg:flex-row justify-between items-center">
+        <div className="text-center md:text-left lg:text-left py-2 md:py-0 lg:py-0 flex items-center justify-center md:justify-start lg:justify-start">
+          <div className="flex space-x-2 md:space-x-4 lg:space-x-6">
+            <ul className="flex p-2 space-x-2 md:space-x-4 lg:space-x-6 text-sm md:text-base lg:text-lg font-semibold text-white">
+              <li className="hover:text-blue-600">
                 <Link href="/">Home</Link>
               </li>
               <li className="hover:text-blue-600">
                 <Link href="todolist">TodoList</Link>
               </li>
               <li className="hover:text-blue-600">
-                <Link href="/draw">AI-Draw</Link>
+                <Link href="/draw">Draw</Link>
               </li>
               <li className="hover:text-blue-600">
                 <Link href="/">Blog</Link>
@@ -47,7 +47,7 @@ const Header: React.FC = () => {
             </ul>
           </div>
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-2 md:gap-4 g:gap-6">
           <ModelButton
             label="Default"
             icon="fire"

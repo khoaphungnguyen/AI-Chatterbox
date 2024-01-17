@@ -137,7 +137,7 @@ export default function SideNav() {
                       />
                     ) : (
                       <div className="flex items-center justify-center h-10 w-10 rounded-full bg-blue-500 text-white font-semibold text-lg border-4 border-white shadow-lg">
-                        <Avvvatars value={session?.user.name! } />
+                        <Avvvatars value={session?.user.name!} />
                       </div>
                     )}
                     <div className="block ">Sign Out</div>

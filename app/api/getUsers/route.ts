@@ -1,6 +1,6 @@
 import { NextRequest,NextResponse } from 'next/server'
 import { auth } from '@/auth';
-export async function GET(req: NextRequest, res: NextResponse ){
+export async function GET(){
       const authToken = await auth();
       const user = authToken?.user;
 

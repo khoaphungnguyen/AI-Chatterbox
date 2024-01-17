@@ -13,8 +13,10 @@ export default function SignInPage() {
       <h2 className="text-black text-5xl font-bold mb-6 ">
         Welcome to RapidGuard
       </h2>
-      <div className="z-10 w-full max-w-md overflow-hidden rounded-2xl border border-gray-200 
-       bg-white p-6">
+      <div
+        className="z-10 w-full max-w-md overflow-hidden rounded-2xl border border-gray-200 
+       bg-white p-6"
+      >
         <div className="flex flex-col items-center justify-center space-y-3 text-center">
           <Link href="/">
             <LockKeyholeIcon className="h-10 w-10 text-black" />

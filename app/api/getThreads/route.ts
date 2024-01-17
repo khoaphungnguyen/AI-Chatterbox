@@ -1,6 +1,6 @@
 import { NextRequest,NextResponse } from 'next/server'
 import { auth } from '@/auth';
-export async function GET(req: NextRequest, res: NextResponse ){
+export async function GET(){
       const authToken = await auth();
     try {
         const response = await fetch(`${process.env.BACKEND_URL}/protected/threads`, {

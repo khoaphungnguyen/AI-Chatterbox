@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fetch from 'node-fetch';
 import {auth} from '../../../auth';
-export async function POST(req: NextRequest) {
+export async function POST() {
   const session = await auth();
   try {
     const response = await fetch(`${process.env.BACKEND_URL}/protected/suggestions`, {

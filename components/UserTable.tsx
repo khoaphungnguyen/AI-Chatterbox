@@ -9,6 +9,7 @@ import {
   TableRow,
   Text,
 } from "@tremor/react";
+import Pagination from "./Pagination";
 
 interface User {
   fullName: string;
@@ -20,6 +21,12 @@ interface User {
 
 export default function UsersTable({ searchTerm }: { searchTerm: string }) {
   const [users, setUsers] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const usersPerPage = 10;
+
+  function handlePageChange(page: number) {
+    setCurrentPage(page);
+  }
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -48,46 +55,56 @@ export default function UsersTable({ searchTerm }: { searchTerm: string }) {
         user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [users, searchTerm]);
+  const totalPages = Math.ceil(memoizedUsers.length / usersPerPage);
+  const startIndex = (currentPage - 1) * usersPerPage;
+  const endIndex = startIndex + usersPerPage;
+  const currentUsers = memoizedUsers.slice(startIndex, endIndex);
 
   return (
-
-    <Table className="">
-      <TableHead>
-        <TableRow>
-          <TableHeaderCell>Name</TableHeaderCell>
-          <TableHeaderCell>Email</TableHeaderCell>
-          <TableHeaderCell>Verified</TableHeaderCell>
-          <TableHeaderCell>Created At</TableHeaderCell>
-          <TableHeaderCell>Last Login</TableHeaderCell>
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        {memoizedUsers?.map((user: User) => (
-          <TableRow key={user.email}>
-            <TableCell>{user.fullName}</TableCell>
-            <TableCell>
-              <Text>{user.email}</Text>
-            </TableCell>
-            <TableCell>
-              {user.emailVerified === true ? "True" : "False"}
-            </TableCell>
-            <TableCell>
-              <Text>
-                {new Intl.DateTimeFormat("en-US").format(
-                  new Date(user.createdAt)
-                )}
-              </Text>
-            </TableCell>
-            <TableCell>
-              <Text>
-                {new Intl.DateTimeFormat("en-US").format(
-                  new Date(user.lastLogin)
-                )}
-              </Text>
-            </TableCell>
+    <div>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableHeaderCell>Name</TableHeaderCell>
+            <TableHeaderCell>Email</TableHeaderCell>
+            <TableHeaderCell>Verified</TableHeaderCell>
+            <TableHeaderCell>Created At</TableHeaderCell>
+            <TableHeaderCell>Last Login</TableHeaderCell>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHead>
+        <TableBody>
+          {currentUsers.map((user: User) => (
+            <TableRow key={user.email}>
+              <TableCell>{user.fullName}</TableCell>
+              <TableCell>
+                <Text>{user.email}</Text>
+              </TableCell>
+              <TableCell>
+                {user.emailVerified === true ? "True" : "False"}
+              </TableCell>
+              <TableCell>
+                <Text>
+                  {new Intl.DateTimeFormat("en-US").format(
+                    new Date(user.createdAt)
+                  )}
+                </Text>
+              </TableCell>
+              <TableCell>
+                <Text>
+                  {new Intl.DateTimeFormat("en-US").format(
+                    new Date(user.lastLogin)
+                  )}
+                </Text>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
+    </div>
   );
 }
