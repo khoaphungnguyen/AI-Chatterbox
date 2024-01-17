@@ -42,14 +42,16 @@ export default function UsersTable({ searchTerm }: { searchTerm: string }) {
       return users;
     }
 
-    return users.filter((user) =>
-      user.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+    return users.filter(
+      (user: User) =>
+        user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [users, searchTerm]);
 
-  console.log(memoizedUsers);
   return (
-    <Table>
+
+    <Table className="">
       <TableHead>
         <TableRow>
           <TableHeaderCell>Name</TableHeaderCell>

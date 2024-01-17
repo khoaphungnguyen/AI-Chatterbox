@@ -5,7 +5,6 @@ import ClientProvider from "@/components/ClientProvider";
 import Providers from "@/components/SessionProvider";
 import {auth} from "@/auth"
 import Navbar from "@/components/Navbar";
-import {redirect} from "next/navigation"
 export default async function RootLayout({
   children,
 }: {
@@ -15,13 +14,12 @@ export default async function RootLayout({
   const user = await session?.user;
 
   return (
-    <html lang="en" className="h-full bg-gray-900">
+    <html lang="en" className="h-full ">
           <head>
           <link rel="icon" href="/favicon.svg" sizes="any" />  
           </head>
           <body className="h-full">
             <Providers session={session} >
-              
             <div className="flex flex-col lg:flex-row min-h-screen">
               <div className="flex-1 bg-gray-800 sm:h-screen">
                 {user?.role === "admin" ? <div><Navbar user={user!}/></div> : <div><SideBar /></div>}

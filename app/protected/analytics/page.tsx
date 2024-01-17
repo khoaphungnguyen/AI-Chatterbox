@@ -9,7 +9,7 @@ async function AnalyticPage() {
     return <div>Not authorized</div>;
   }
   return (
-    <div className="bg-gray-200">
+    <div className="bg-white ">
       <Analytics />
     </div>
   );

@@ -58,9 +58,9 @@ export default function Navbar({ user }: Props) {
               <div className="hidden sm:ml-6 sm:flex sm:items-center">
                 <Menu as="div" className="relative ml-3">
                   <div>
-                    <Menu.Button className="flex rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2">
+                    <Menu.Button className="flex rounded-full bg-white text-sm focus:outline-none  focus:ring-slate-500 focus:ring-offset-2">
                       <span className="sr-only">Open user menu</span>
-                      {user &&  user?.image ? (
+                      {user && user?.image ? (
                         <Image
                           className="h-8 w-8 rounded-full"
                           src={user.image}
@@ -69,7 +69,9 @@ export default function Navbar({ user }: Props) {
                           alt={user?.name ?? "avatar"}
                         />
                       ) : (
-                        <Avvvatars value={user?.name || "U"} />
+                        <div className="flex items-center space-x-3">
+                          <Avvvatars size={35} value={user?.name || "U"} />
+                        </div>
                       )}
                     </Menu.Button>
                   </div>
@@ -86,15 +88,26 @@ export default function Navbar({ user }: Props) {
                       {user ? (
                         <Menu.Item>
                           {({ active }) => (
-                            <button
-                              className={classNames(
-                                active ? "bg-gray-100" : "",
-                                "flex w-full px-4 py-2 text-sm text-gray-700"
-                              )}
-                              onClick={() => signOut()}
-                            >
-                              Sign out
-                            </button>
+                            <div className="flex flex-col items-center justify-center">
+                              <div className="flex flex-col items-center">
+                                <div className="text-base font-medium text-gray-800">
+                                  {user.name}
+                                </div>
+                                <div className="text-sm font-medium text-gray-500">
+                                  {user.email}
+                                </div>
+                              </div>
+
+                              <button
+                                className={classNames(
+                                  active ? "bg-gray-100" : "",
+                                  " w-full px-4 py-2 text-sm text-red-700 "
+                                )}
+                                onClick={() => signOut()}
+                              >
+                                Sign out
+                              </button>
+                            </div>
                           )}
                         </Menu.Item>
                       ) : (
