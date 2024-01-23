@@ -110,7 +110,7 @@ const Thread: React.FC<ThreadProps> = ({ id }) => {
   return (
     <div
       ref={chatContainerRef}
-      className="flex-1 mt-10 overflow-y-scroll overflow-x-hidden"
+      className="flex-1 mt-10 overflow-y-scroll overflow-x-hidden "
     >
       {messages.length > 0 &&
         messages.map((message) => (

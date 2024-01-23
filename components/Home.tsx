@@ -145,7 +145,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-full justify-between text-gray-100 ">
+    <div className="flex flex-col h-full justify-between text-gray-100 bg-gray-800 ">
       <Header />
       <div className="flex justify-center">
         <Image src={icon} width={350} height={350} alt="RapidSec Logo" />

@@ -21,7 +21,7 @@ export default async function RootLayout({
           <body className="h-full">
             <Providers session={session} >
             <div className="flex flex-col lg:flex-row min-h-screen">
-              <div className="flex-1 bg-gray-800 sm:h-screen">
+              <div className="flex-1 min-h-screen ">
                 {user?.role === "admin" ? <div><Navbar user={user!}/></div> : <div><SideBar /></div>}
                 <ClientProvider />
                 {children}      
