@@ -145,7 +145,7 @@ const Message: React.FC<Props> = ({ message, id }) => {
   };
 
   return (
-    <div className="flex items-start space-x-3 max-w-3xl mx-auto ">
+    <div className="flex items-start space-x-3 max-w-3xl mx-auto">
       {isSmartChat ? (
         <Image
           src="/icon.png"

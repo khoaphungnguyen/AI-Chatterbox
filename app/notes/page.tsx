@@ -2,14 +2,12 @@
 
 import { useState, useEffect, useReducer } from "react";
 import { useRouter } from "next/navigation";
+import { parseISO } from "date-fns";
 interface Note {
   id: number;
   title: string;
-  problemContent: string;
-  approach: string;
-  solution: string;
-  extraNotes: string;
-  timestamp: Date;
+  created_at: Date;
+  updated_at: Date;
 }
 
 type Action =
@@ -41,10 +39,18 @@ const NoteItem: React.FC<NoteItemProps> = ({ note, deleteNote, router }) => (
     key={note.id}
     className="flex items-center justify-between mb-4 p-4 border border-gray-300 rounded shadow-lg"
   >
-    <span className="font-semibold text-lg">{note.title}</span>
+    <div>
+      <span className="font-semibold text-lg">{note.title}</span>
+      <div className="text-sm text-gray-500">
+        Created at: {note.created_at.toLocaleDateString()}{" "}
+      </div>
+      <div className="text-sm text-gray-500">
+        Updated at: {note.updated_at.toLocaleDateString()}{" "}
+      </div>
+    </div>
     <div>
       <button
-        onClick={() => router.push(`/note/${note.id}`)}
+        onClick={() => router.push(`/notes/${note.id}`)}
         className="mr-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
       >
         View / Edit
@@ -58,46 +64,66 @@ const NoteItem: React.FC<NoteItemProps> = ({ note, deleteNote, router }) => (
     </div>
   </li>
 );
+
 export default function NoteTaking() {
   const [notes, dispatch] = useReducer(notesReducer, []);
   const [newNoteTitle, setNewNoteTitle] = useState("");
   const router = useRouter();
 
   useEffect(() => {
-    // Load notes from localStorage
-    const savedNotes = localStorage.getItem("notes");
-    if (savedNotes) {
-      try {
-        const parsedNotes = JSON.parse(savedNotes);
-        const notesWithDateObjects = parsedNotes.map((note: any) => ({
+    // Fetch all notes from the API
+    fetch(`/api/notes`, {
+      method: "GET",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const notesWithDateObjects = data.map((note: any) => ({
           ...note,
-          timestamp: new Date(note.timestamp),
+          created_at: parseISO(note.created_at),
+          updated_at: parseISO(note.updated_at),
         }));
         dispatch({ type: "SET_NOTES", notes: notesWithDateObjects });
-      } catch (error) {
-        console.error("Failed to parse notes from localStorage", error);
-      }
-    }
+      })
+      .catch((error) => console.error("Failed to fetch notes", error));
   }, []);
 
-  const addNote = () => {
+  const addNote = async () => {
     if (newNoteTitle) {
-      const newNote: Note = {
-        id: Date.now(),
-        title: newNoteTitle,
-        problemContent: "",
-        approach: "",
-        solution: "",
-        extraNotes: "",
-        timestamp: new Date(),
-      };
-      dispatch({ type: "ADD_NOTE", note: newNote });
+      // Create the note via the API
+      await fetch(`/api/notes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ title: newNoteTitle }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("data", data);
+          // Create a new note with the data from the response
+          const newNote: Note = {
+            id: data.ID,
+            title: data.Title,
+            created_at: new Date(data.CreatedAt),
+            updated_at: new Date(data.UpdatedAt),
+          };
+
+          // Add the new note to the local state
+          dispatch({ type: "ADD_NOTE", note: newNote });
+        });
+
       setNewNoteTitle("");
     }
   };
 
   const deleteNote = (id: number) => {
-    dispatch({ type: "DELETE_NOTE", id });
+    // Delete the note via the API
+    fetch(`/api/notes/${id}`, {
+      method: "DELETE",
+    }).then(() => {
+      // Remove the note from the local state
+      dispatch({ type: "DELETE_NOTE", id });
+    });
   };
 
   return (
@@ -123,7 +149,7 @@ export default function NoteTaking() {
             key={note.id}
             note={note}
             deleteNote={deleteNote}
-            router={router} // Passing the router instance directly
+            router={router}
           />
         ))}
       </ul>
