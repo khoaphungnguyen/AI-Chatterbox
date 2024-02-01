@@ -57,14 +57,14 @@ const Header: React.FC = () => {
           <ModelButton
             label="Fast"
             icon="bolt"
-            isActive={model === "openhermes"}
-            onClick={() => handleClick("openhermes")}
+            isActive={model === "llama2:13b"}
+            onClick={() => handleClick("llama2:13b")}
           />
           <ModelButton
             label="Code"
             icon="code"
-            isActive={model === "codellama"}
-            onClick={() => handleClick("codellama")}
+            isActive={model === "codellama:13b"}
+            onClick={() => handleClick("codellama:13b")}
           />
           <ModelButton
             label="GPT 4"

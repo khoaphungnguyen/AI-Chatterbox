@@ -21,7 +21,7 @@ function ThreadRow({ id, title, model, onDelete }: Props) {
       ? "Default"
       : model === "gpt-4-1106-preview"
       ? "GPT 4"
-      : model === "openhermes"
+      : model === "llama2:13b"
       ? "Fast"
       : "Code";
 

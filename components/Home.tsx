@@ -36,7 +36,7 @@ export default function Home() {
 
   const {
     data: suggestions,
-    error: suggestionsError,
+    error: suggestionsError ,
     isLoading,
   } = useSWR(
     ["/api/getSuggestions", model],
@@ -47,8 +47,9 @@ export default function Home() {
       revalidateOnReconnect: false,
     }
   );
+
   // Parse suggestions and handle errors
-  const parsedSuggestions = suggestions ? JSON.parse(suggestions) : [];
+  const parsedSuggestions = suggestions ? suggestions : [];
 
   const stopStreaming = async () => {
     try {
