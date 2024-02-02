@@ -12,6 +12,7 @@ import {
   CheckSquare,
   Lightbulb,
   SquareGanttIcon,
+  LoaderIcon,
 } from "lucide-react";
 
 interface Note {
@@ -39,6 +40,8 @@ type NotePageProps = {
 export default function NotePage({ params: { id } }: NotePageProps) {
   const router = useRouter();
   const [note, setNote] = useState<Note | null>(null);
+  const [hints, setHints] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchNote = async () => {
@@ -60,6 +63,7 @@ export default function NotePage({ params: { id } }: NotePageProps) {
 
   const handleUpdate = async (e: React.MouseEvent) => {
     e.preventDefault();
+
     if (!note) return;
 
     const updatedNote: NotePayload = {
@@ -96,6 +100,37 @@ export default function NotePage({ params: { id } }: NotePageProps) {
         [field]: value,
       });
     }
+  };
+
+  const handleGenerate = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    if (!note) return;
+
+    const input =
+      "Title:" +
+      note?.title +
+      ". Problem Statement:" +
+      note?.problem +
+      ". User Approach:" +
+      note?.approach +
+      ". User Solution:" +
+      note?.solution;
+
+    const response = await fetch(`/api/getHints`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        input: input,
+      }),
+    });
+
+    const data = await response.json();
+    setHints(data);
+    toast.success("Hints generated!");
+    setIsLoading(false);
   };
 
   if (!note) {
@@ -146,20 +181,31 @@ export default function NotePage({ params: { id } }: NotePageProps) {
             <div>
               <label className="text-lg font-bold mb-2 flex items-center text-orange-300">
                 <SquareGanttIcon className="mr-2 text-orange-300" size={22} />
-                Suggestions
+                Feeback
               </label>
               <p>
-                If you get stuck, please press "Generate Idea" to get hints.
+                {isLoading ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="flex items-center justify-center ">
+                      <LoaderIcon size={22} className="animate-spin mr-2" />
+                      Processing...
+                    </div>
+                  </div>
+                ) : hints ? (
+                  hints
+                ) : (
+                  "As an AI assistant, I'll guide your algorithmic challenge, providing feedback but not direct solutions. Let's start!"
+                )}
               </p>
             </div>
             <button
-              className="bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-bold py-2 px-4 rounded shadow-lg hover:shadow-none transition duration-300 ease-in-out"
-              onClick={(e) => {
-                e.preventDefault();
-                toast.success("Idea generated!");
-              }}
+              className={`bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-bold py-2 px-4 rounded shadow-lg hover:shadow-none transition duration-300 ease-in-out ${
+                isLoading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+              onClick={handleGenerate}
+              disabled={isLoading}
             >
-              Generate
+              Get Hints
             </button>
           </div>
 
@@ -167,7 +213,7 @@ export default function NotePage({ params: { id } }: NotePageProps) {
           <div className="md:col-span-3">
             <label className="text-lg font-bold mb-2 flex items-center text-teal-300">
               <Clipboard className="mr-2 text-teal-300" size={22} />
-              Problem Content
+              Problem
             </label>
             <textarea
               value={note.problem}

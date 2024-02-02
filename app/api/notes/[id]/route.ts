@@ -33,10 +33,10 @@ export async function PUT(req: NextRequest){
   const noteID = req.nextUrl.pathname.split('/').pop();
   const body = await req.json();
   const problem = body.problem;
-  const approach = body.solution;
+  const approach = body.approach;
   const solution = body.solution;
   const extraNote = body.extraNote;
-  
+
   const authToken = await auth();
   try {
     const response = await fetch(`${process.env.BACKEND_URL}/protected/notes/${noteID}`, {

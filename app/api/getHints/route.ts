@@ -1,32 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fetch from 'node-fetch';
 import {auth} from '../../../auth';
-import suggestions from '@/components/suggestion.json';
-export async function POST() {
+export async function POST(req: NextRequest) {
   const session = await auth();
 
- // Generate 4 unique random indices
-const indices = new Set<number>();
-while (indices.size < 4) {
-  indices.add(Math.floor(Math.random() * suggestions.length));
-}
 
-// Use the indices to pick items from the suggestions array
-const randomSuggestions = Array.from(indices).map(index => suggestions[index]);
+  const body = await req.json();
 
-
-if (randomSuggestions){
-  return NextResponse.json(randomSuggestions , { status: 200 });
-
-}
+  const input = body.input;
   try {
-    const response = await fetch(`${process.env.BACKEND_URL}/protected/suggestions`, {
+    const response = await fetch(`${process.env.BACKEND_URL}/protected/hints`, {
       method: 'POST',  
       headers: {
         'Content-Type': 'application/json',
         'Authorization': session ? `Bearer ${session?.accessToken}` : '',
       },
-      body: JSON.stringify({"model": "gpt-3.5-turbo-1106"}),
+      body: JSON.stringify({"model": "gpt-3.5-turbo-1106",
+      //  body: JSON.stringify({"model": "llama2:13b",
+      "input": input}),
     });
 
     // Check if the response from the backend server is OK
@@ -35,6 +26,7 @@ if (randomSuggestions){
     }
     // Parse the response data
     const data = await response.json();
+
     // Return the parsed data as a JSON response
     return NextResponse.json(data , { status: 200 });
 
