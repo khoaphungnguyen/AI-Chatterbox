@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fetch from 'node-fetch';
-import {auth} from '../../../auth';
+import {auth} from '../../../../auth';
 export async function POST(req: NextRequest) {
   const session = await auth();
-
 
   const body = await req.json();
 
   const input = body.input;
+  const systemPromt = "Revise the input to make it more clear and concise, but do not change the meaning of the input.";
   try {
     const response = await fetch(`${process.env.BACKEND_URL}/protected/hints`, {
       method: 'POST',  
@@ -17,7 +17,8 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({"model": "gpt-3.5-turbo-1106",
       //  body: JSON.stringify({"model": "llama2:13b",
-      "input": input}),
+      "input": input,
+    "system": systemPromt}),
     });
 
     // Check if the response from the backend server is OK

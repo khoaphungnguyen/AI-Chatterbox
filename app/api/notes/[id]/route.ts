@@ -35,7 +35,7 @@ export async function PUT(req: NextRequest){
   const problem = body.problem;
   const approach = body.approach;
   const solution = body.solution;
-  const extraNote = body.extraNote;
+
 
   const authToken = await auth();
   try {
@@ -49,7 +49,6 @@ export async function PUT(req: NextRequest){
           problem,
           approach,
           solution,
-          extra_note: extraNote,
         }),
       });
 

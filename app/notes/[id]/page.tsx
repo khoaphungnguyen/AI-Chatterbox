@@ -1,13 +1,10 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation"; // corrected from next/navigation
-import toast from "react-hot-toast";
-
 import { ProgressCircle } from "@tremor/react";
 import {
   ArrowLeft,
   Save,
-  FileText,
   Clipboard,
   CheckSquare,
   Lightbulb,
@@ -21,14 +18,13 @@ interface Note {
   problem: string;
   approach: string;
   solution: string;
-  extra_note: string;
+  updated_at: Date;
 }
 
 interface NotePayload {
   problem: string;
   approach: string;
   solution: string;
-  extraNote: string;
 }
 
 type NotePageProps = {
@@ -41,7 +37,10 @@ export default function NotePage({ params: { id } }: NotePageProps) {
   const router = useRouter();
   const [note, setNote] = useState<Note | null>(null);
   const [hints, setHints] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingHint, setIsLoadingHint] = useState(false);
+  const [isLoadingProblem, setIsLoadingProblem] = useState(false);
+  const [isLoadingRevise, setIsLoadingRevise] = useState(false);
+  const [isLoadingAnswers, setIsLoadingAnswers] = useState(false);
 
   useEffect(() => {
     const fetchNote = async () => {
@@ -54,7 +53,6 @@ export default function NotePage({ params: { id } }: NotePageProps) {
         setNote(noteToEdit);
       } catch (error) {
         console.error("Failed to fetch note", error);
-        toast.error("Failed to load the note.");
       }
     };
 
@@ -70,7 +68,6 @@ export default function NotePage({ params: { id } }: NotePageProps) {
       problem: note.problem,
       approach: note.approach,
       solution: note.solution,
-      extraNote: note.extra_note,
     };
 
     try {
@@ -86,10 +83,13 @@ export default function NotePage({ params: { id } }: NotePageProps) {
         throw new Error(`Failed to update note: ${response.status}`);
       }
 
-      toast.success("Note updated!");
+      // Update the note state with the new updatedAt value
+      setNote({
+        ...note,
+        updated_at: new Date(),
+      });
     } catch (error) {
       console.error("Failed to update note", error);
-      toast.error("Failed to update the note.");
     }
   };
 
@@ -102,9 +102,64 @@ export default function NotePage({ params: { id } }: NotePageProps) {
     }
   };
 
-  const handleGenerate = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleGenerateProblem = async (
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsLoadingProblem(true);
+    if (!note) return;
+
+    const input = "Title:" + note?.title;
+
+    const response = await fetch(`/api/generateNote/getProblems`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        input: input,
+      }),
+    });
+
+    const data = await response.json();
+
+    setNote({
+      ...note,
+      problem: data,
+    });
+    setIsLoadingProblem(false);
+  };
+
+  const handleGetRevise = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setIsLoadingRevise(true);
+    if (!note) return;
+
+    const input = "User Approach:" + note?.approach;
+
+    const response = await fetch(`/api/generateNote/getRevise`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        input: input,
+      }),
+    });
+
+    const data = await response.json();
+    setNote({
+      ...note,
+      approach: data,
+    });
+    setIsLoadingRevise(false);
+  };
+
+  const handleGenerateHints = async (
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    e.preventDefault();
+    setIsLoadingHint(true);
     if (!note) return;
 
     const input =
@@ -117,7 +172,7 @@ export default function NotePage({ params: { id } }: NotePageProps) {
       ". User Solution:" +
       note?.solution;
 
-    const response = await fetch(`/api/getHints`, {
+    const response = await fetch(`/api/generateNote/getHints`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -129,8 +184,35 @@ export default function NotePage({ params: { id } }: NotePageProps) {
 
     const data = await response.json();
     setHints(data);
-    toast.success("Hints generated!");
-    setIsLoading(false);
+    setIsLoadingHint(false);
+  };
+
+
+
+  const handleGenerateAnswers = async (
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    e.preventDefault();
+    setIsLoadingAnswers(true);
+    if (!note) return;
+
+    const input =
+      "Problem Statement:" +
+      note?.problem 
+
+    const response = await fetch(`/api/generateNote/getHints`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        input: input,
+      }),
+    });
+
+    const data = await response.json();
+    setHints(data);
+    setIsLoadingAnswers(false);
   };
 
   if (!note) {
@@ -147,7 +229,7 @@ export default function NotePage({ params: { id } }: NotePageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-gray-900 text-gray-100 p-10 overflow-auto">
+    <main className="min-h-screen bg-gray-900 text-gray-100 p-5 overflow-auto">
       <div className="mb-8 flex flex-col md:flex-row items-center justify-between">
         <button
           onClick={() => router.push("/notes")}
@@ -160,19 +242,22 @@ export default function NotePage({ params: { id } }: NotePageProps) {
         <h1 className="text-4xl font-semibold text-center text-blue-400">
           {note.title}
         </h1>
+
         <div className="flex justify-center">
-          <div className="flex justify-center">
-            <button
-              type="submit"
-              onClick={handleUpdate}
-              className="flex items-center px-6 py-3 bg-blue-400 hover:bg-blue-500 active:bg-blue-600 text-white font-bold rounded-md transition duration-300 ease-in-out shadow-lg hover:shadow-none"
-            >
-              <Save className="mr-2 text-white" size={22} />
-              Update Note
-            </button>
-          </div>
+          <button
+            type="submit"
+            onClick={handleUpdate}
+            className="flex items-center px-6 py-3 bg-blue-400 hover:bg-blue-500 active:bg-blue-600 text-white font-bold rounded-md transition duration-300 ease-in-out shadow-lg hover:shadow-none"
+          >
+            <Save className="mr-2 text-white" size={22} />
+            Update Note
+          </button>
         </div>
       </div>
+
+      <p className="text-sm text-gray-500 mt-2">
+        Updated at: {new Date(note.updated_at).toLocaleString()}
+      </p>
 
       <form className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -184,7 +269,7 @@ export default function NotePage({ params: { id } }: NotePageProps) {
                 Feeback
               </label>
               <p>
-                {isLoading ? (
+                {isLoadingHint ? (
                   <div className="flex items-center justify-center space-x-2">
                     <div className="flex items-center justify-center ">
                       <LoaderIcon size={22} className="animate-spin mr-2" />
@@ -200,10 +285,10 @@ export default function NotePage({ params: { id } }: NotePageProps) {
             </div>
             <button
               className={`bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-bold py-2 px-4 rounded shadow-lg hover:shadow-none transition duration-300 ease-in-out ${
-                isLoading ? "opacity-50 cursor-not-allowed" : ""
+                isLoadingHint ? "opacity-50 cursor-not-allowed" : ""
               }`}
-              onClick={handleGenerate}
-              disabled={isLoading}
+              onClick={handleGenerateHints}
+              disabled={isLoadingHint}
             >
               Get Hints
             </button>
@@ -211,57 +296,100 @@ export default function NotePage({ params: { id } }: NotePageProps) {
 
           {/* Problem Content */}
           <div className="md:col-span-3">
-            <label className="text-lg font-bold mb-2 flex items-center text-teal-300">
-              <Clipboard className="mr-2 text-teal-300" size={22} />
-              Problem
-            </label>
-            <textarea
-              value={note.problem}
-              onChange={(e) => handleInputChange(e.target.value, "problem")}
-              className="w-full h-32 p-4 rounded-md bg-gray-800 border border-gray-700 focus:border-teal-500 focus:ring focus:ring-teal-300 focus:ring-opacity-50"
-              placeholder="Describe the problem..."
-            />
+            <div className="flex justify-between items-center">
+              <label className="text-lg font-bold mb-2 flex items-center text-teal-300">
+                <Clipboard className="mr-2 text-teal-300" size={22} />
+                Problem
+              </label>
+              <div className="relative">
+                <button
+                  className={`w-24 h-8 bg-teal-500 hover:bg-teal-700 text-white font-bold rounded inline-flex items-center justify-center mb-2 ${
+                    isLoadingProblem ? "opacity-50 cursor-not-allowed" : ""
+                  } `}
+                  onClick={handleGenerateProblem}
+                  disabled={isLoadingProblem}
+                >
+                  Generate
+                </button>
+              </div>
+            </div>
+            {isLoadingProblem ? (
+              <div className="flex items-center justify-center space-x-2 w-full h-40 p-4 rounded-md bg-gray-800 border border-gray-700">
+                <div className="flex items-center justify-center ">
+                  <LoaderIcon size={22} className="animate-spin mr-2" />
+                  Processing...
+                </div>
+              </div>
+            ) : (
+              <textarea
+                value={note.problem}
+                onChange={(e) => handleInputChange(e.target.value, "problem")}
+                className="w-full h-40 p-4 rounded-md bg-gray-800 border border-gray-700 focus:border-teal-500 focus:ring focus:ring-teal-300 focus:ring-opacity-50"
+                placeholder="Describe the problem..."
+              />
+            )}
           </div>
 
           {/* Approach */}
           <div className="md:col-span-3">
-            <label className="text-lg font-bold mb-2 flex items-center text-yellow-300">
-              <Lightbulb className="mr-2 text-yellow-300" size={22} />
-              Approach
-            </label>
-            <textarea
-              value={note.approach}
-              onChange={(e) => handleInputChange(e.target.value, "approach")}
-              className="w-full h-32 p-4 rounded-md bg-gray-800 border border-gray-700 focus:border-yellow-500 focus:ring focus:ring-yellow-300 focus:ring-opacity-50"
-              placeholder="Describe your approach..."
-            />
+            <div className="flex justify-between items-center">
+              <label className="text-lg font-bold mb-2 flex items-center text-yellow-300">
+                <Lightbulb className="mr-2 text-yellow-300" size={22} />
+                Approach
+              </label>
+              <div className="relative">
+                <button
+                  className={`w-24 h-8 bg-yellow-500 hover:bg-yellow-700 text-white font-bold rounded inline-flex items-center justify-center mb-2 ${
+                    isLoadingProblem ? "opacity-50 cursor-not-allowed" : ""
+                  } `}
+                  onClick={handleGetRevise}
+                  disabled={isLoadingRevise}
+                >
+                  Revise
+                </button>
+              </div>
+            </div>
+            {isLoadingRevise ? (
+              <div className="flex items-center justify-center space-x-2 w-full h-40 p-4 rounded-md bg-gray-800 border border-gray-700">
+                <div className="flex items-center justify-center ">
+                  <LoaderIcon size={22} className="animate-spin mr-2" />
+                  Processing...
+                </div>
+              </div>
+            ) : (
+              <textarea
+                value={note.approach}
+                onChange={(e) => handleInputChange(e.target.value, "approach")}
+                className="w-full h-40 p-4 rounded-md bg-gray-800 border border-gray-700 focus:border-yellow-500 focus:ring focus:ring-yellow-300 focus:ring-opacity-50"
+                placeholder="Describe your approach..."
+              />
+            )}
           </div>
 
           {/* Solution */}
           <div className="md:col-span-3">
-            <label className="text-lg font-bold mb-2 flex items-center text-green-300">
-              <CheckSquare className="mr-2 text-green-300" size={22} />
-              Solution
-            </label>
+            <div className="flex justify-between items-center">
+              <label className="text-lg font-bold mb-2 flex items-center text-green-300">
+                <CheckSquare className="mr-2 text-green-300" size={22} />
+                Solution
+              </label>
+              <div className="relative">
+                <button
+                  className={`w-24 h-8 bg-green-400 hover:bg-green-500 text-white font-bold rounded inline-flex items-center justify-center mb-2 ${
+                    isLoadingProblem ? "opacity-50 cursor-not-allowed" : ""
+                  } `}
+                  onClick={handleGenerateAnswers}
+                  disabled={isLoadingProblem}
+                >
+                  Show
+                </button>
+              </div>
+            </div>
             <textarea
               value={note.solution}
               onChange={(e) => handleInputChange(e.target.value, "solution")}
-              className="w-full h-40 p-4 rounded-md bg-gray-800 border border-gray-700 focus:border-green-500 focus:ring focus:ring-green-300 focus:ring-opacity-50"
+              className="w-full h-60 p-4 rounded-md bg-gray-800 border border-gray-700 focus:border-green-500 focus:ring focus:ring-green-300 focus:ring-opacity-50"
               placeholder="Describe the solution..."
-            />
-          </div>
-
-          {/* Extra Notes */}
-          <div className="md:col-span-3">
-            <label className="text-lg font-bold mb-2 flex items-center text-purple-300">
-              <FileText className="mr-2 text-purple-300" size={22} />
-              Extra Notes
-            </label>
-            <textarea
-              value={note.extra_note}
-              onChange={(e) => handleInputChange(e.target.value, "extra_note")}
-              className="w-full h-20 p-4 rounded-md bg-gray-800 border border-gray-700 focus:border-purple-500 focus:ring focus:ring-purple-300 focus:ring-opacity-50"
-              placeholder="Any additional information..."
             />
           </div>
         </div>
