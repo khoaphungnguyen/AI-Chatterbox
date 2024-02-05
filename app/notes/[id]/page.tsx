@@ -1,7 +1,16 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation"; // corrected from next/navigation
-import { ProgressCircle } from "@tremor/react";
+import {
+  ProgressCircle,
+  Button,
+  Dialog,
+  DialogPanel,
+  Title,
+  Textarea,
+  Select,
+  SelectItem,
+} from "@tremor/react";
 import {
   ArrowLeft,
   Save,
@@ -10,6 +19,7 @@ import {
   Lightbulb,
   SquareGanttIcon,
   LoaderIcon,
+  X,
 } from "lucide-react";
 
 interface Note {
@@ -37,10 +47,13 @@ export default function NotePage({ params: { id } }: NotePageProps) {
   const router = useRouter();
   const [note, setNote] = useState<Note | null>(null);
   const [hints, setHints] = useState(null);
+  const [code, setCode] = useState("");
   const [isLoadingHint, setIsLoadingHint] = useState(false);
   const [isLoadingProblem, setIsLoadingProblem] = useState(false);
   const [isLoadingRevise, setIsLoadingRevise] = useState(false);
-  const [isLoadingAnswers, setIsLoadingAnswers] = useState(false);
+  const [isLoadingSolution, setIsLoadingSolution] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [value, setValue] = useState("Golang");
 
   useEffect(() => {
     const fetchNote = async () => {
@@ -187,32 +200,27 @@ export default function NotePage({ params: { id } }: NotePageProps) {
     setIsLoadingHint(false);
   };
 
-
-
-  const handleGenerateAnswers = async (
-    e: React.MouseEvent<HTMLButtonElement>
-  ) => {
+  const handleSolution = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    setIsLoadingAnswers(true);
+    setIsLoadingSolution(true);
     if (!note) return;
+    console.log("Generating solution");
+    const input = "Problem Statement:" + note?.problem;
 
-    const input =
-      "Problem Statement:" +
-      note?.problem 
-
-    const response = await fetch(`/api/generateNote/getHints`, {
+    const response = await fetch(`/api/generateNote/getSolutions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         input: input,
+        language: value,
       }),
     });
 
     const data = await response.json();
-    setHints(data);
-    setIsLoadingAnswers(false);
+    setCode(data);
+    setIsLoadingSolution(false);
   };
 
   if (!note) {
@@ -229,8 +237,8 @@ export default function NotePage({ params: { id } }: NotePageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-gray-900 text-gray-100 p-5 overflow-auto">
-      <div className="mb-8 flex flex-col md:flex-row items-center justify-between">
+    <main className="min-h-screen bg-gray-900 text-gray-100 p-2 overflow-auto">
+      <div className="mb-4 flex flex-col md:flex-row items-center justify-between">
         <button
           onClick={() => router.push("/notes")}
           className="flex items-center justify-center p-3 rounded-md text-red-400 bg-gray-800 hover:bg-gray-700 active:bg-gray-600 shadow-lg hover:shadow-none transition duration-300 ease-in-out"
@@ -340,7 +348,7 @@ export default function NotePage({ params: { id } }: NotePageProps) {
               <div className="relative">
                 <button
                   className={`w-24 h-8 bg-yellow-500 hover:bg-yellow-700 text-white font-bold rounded inline-flex items-center justify-center mb-2 ${
-                    isLoadingProblem ? "opacity-50 cursor-not-allowed" : ""
+                    isLoadingRevise ? "opacity-50 cursor-not-allowed" : ""
                   } `}
                   onClick={handleGetRevise}
                   disabled={isLoadingRevise}
@@ -376,13 +384,58 @@ export default function NotePage({ params: { id } }: NotePageProps) {
               <div className="relative">
                 <button
                   className={`w-24 h-8 bg-green-400 hover:bg-green-500 text-white font-bold rounded inline-flex items-center justify-center mb-2 ${
-                    isLoadingProblem ? "opacity-50 cursor-not-allowed" : ""
+                    isLoadingSolution ? "opacity-50 cursor-not-allowed" : ""
                   } `}
-                  onClick={handleGenerateAnswers}
-                  disabled={isLoadingProblem}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsOpen(true);
+                  }}
                 >
                   Show
                 </button>
+                <Dialog
+                  open={isOpen}
+                  onClose={(val) => setIsOpen(val)}
+                  className="rounded-lg w-full h-full bg-gray-900 bg-opacity-90"
+                >
+                  <DialogPanel className="bg-gray-800 text-white p-6 w-3/4 h-3/4">
+                    <div className="flex justify-between items-center mb-4">
+                      <Title>Show Solution</Title>
+                      <Button variant="light" onClick={() => setIsOpen(false)}>
+                        <X className="text-red-500" size={22} />
+                      </Button>
+                    </div>
+                    <Select value={value} onValueChange={setValue} placeholder="Golang">
+                      <SelectItem value="1">Golang</SelectItem>
+                      <SelectItem value="2">Python</SelectItem>
+                      <SelectItem value="3">C</SelectItem>
+                      <SelectItem value="4">C++</SelectItem>
+                    </Select>
+                    <div className="mb-4 mt-4">
+                      {isLoadingSolution ? (
+                        <div className="flex items-center justify-center space-x-2">
+                          <LoaderIcon size={22} className="animate-spin mr-2" />
+                          Processing...
+                        </div>
+                      ) : (
+                        <Textarea
+                          value={code}
+                          placeholder="Your solution will be shown here..."
+                          style={{ height: "300px" }}
+                        />
+                      )}
+                    </div>
+                    <div className="flex justify-end space-x-4">
+                      <Button
+                        variant="primary"
+                        color="green"
+                        onClick={handleSolution}
+                      >
+                        Generate
+                      </Button>
+                    </div>
+                  </DialogPanel>
+                </Dialog>
               </div>
             </div>
             <textarea

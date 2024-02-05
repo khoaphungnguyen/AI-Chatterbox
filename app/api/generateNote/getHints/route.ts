@@ -3,8 +3,6 @@ import fetch from 'node-fetch';
 import {auth} from '../../../../auth';
 export async function POST(req: NextRequest) {
   const session = await auth();
-
-
   const body = await req.json();
 
   const input = body.input;
@@ -19,7 +17,7 @@ export async function POST(req: NextRequest) {
         'Authorization': session ? `Bearer ${session?.accessToken}` : '',
       },
       body: JSON.stringify({"model": "gpt-3.5-turbo-1106",
-      //  body: JSON.stringify({"model": "llama2:13b",
+        //body: JSON.stringify({"model": "codellama:13b",
       "input": input,
     system:systemPromt}),
     });

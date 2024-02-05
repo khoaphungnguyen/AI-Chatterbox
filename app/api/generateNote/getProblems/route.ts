@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
 
   const input = body.input;
-  const systemPromt  = "From the title, generate a unique and concise coding problem. It should be solvable within 30 minutes in any programming language. Include follow-up questions and requirements.";
+  const systemPromt  = "From the title, generate a unique and concise coding problem. The problem should be clearly explained and solvable within 30 minutes in any programming language. Include follow-up questions and requirements.";
   try {
     const response = await fetch(`${process.env.BACKEND_URL}/protected/hints`, {
       method: 'POST',  
@@ -16,8 +16,8 @@ export async function POST(req: NextRequest) {
         'Content-Type': 'application/json',
         'Authorization': session ? `Bearer ${session?.accessToken}` : '',
       },
-      body: JSON.stringify({"model": "gpt-3.5-turbo-1106",
-      //  body: JSON.stringify({"model": "llama2:13b",
+      //body: JSON.stringify({"model": "gpt-3.5-turbo-1106",
+       body: JSON.stringify({"model": "llama2:13b",
       "input": input,
     "system":systemPromt}),
     });

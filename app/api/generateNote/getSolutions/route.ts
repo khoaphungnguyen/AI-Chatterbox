@@ -3,11 +3,13 @@ import fetch from 'node-fetch';
 import {auth} from '../../../../auth';
 export async function POST(req: NextRequest) {
   const session = await auth();
-
   const body = await req.json();
 
   const input = body.input;
-  const systemPromt = "Revise the input to make it more clear and concise, but do not change the meaning of the input. ";
+  const language = body.language;
+
+  const systemPromt = "Please provide a solution to the problem in" + language 
+
   try {
     const response = await fetch(`${process.env.BACKEND_URL}/protected/hints`, {
       method: 'POST',  
@@ -16,9 +18,9 @@ export async function POST(req: NextRequest) {
         'Authorization': session ? `Bearer ${session?.accessToken}` : '',
       },
       body: JSON.stringify({"model": "gpt-3.5-turbo-1106",
-       // body: JSON.stringify({"model": "openchat",
+        //body: JSON.stringify({"model": "codellama:13b",
       "input": input,
-    "system": systemPromt}),
+    system:systemPromt}),
     });
 
     // Check if the response from the backend server is OK
