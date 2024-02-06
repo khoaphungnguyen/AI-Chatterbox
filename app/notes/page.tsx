@@ -3,9 +3,12 @@
 import { useState, useEffect, useReducer } from "react";
 import { useRouter } from "next/navigation";
 import { parseISO } from "date-fns";
+import { Select, SelectItem } from "@tremor/react";
 interface Note {
   id: number;
   title: string;
+  level: string;
+  type: string;
   created_at: Date;
   updated_at: Date;
 }
@@ -40,7 +43,14 @@ const NoteItem: React.FC<NoteItemProps> = ({ note, deleteNote, router }) => (
     className="flex items-center justify-between mb-4 p-4 border border-gray-300 rounded shadow-lg"
   >
     <div>
-      <span className="font-semibold text-lg">{note.title}</span>
+      <div>
+        <span className="font-semibold text-lg text-black">{note.title}</span>
+        <span className="ml-2 text-sm text-blue-500">Level: {note.level}</span>
+        <span className="ml-2 text-sm text-green-500">
+          Data Type:{note.type}
+        </span>
+      </div>
+
       <div className="text-sm text-gray-500">
         Created at: {note.created_at.toLocaleDateString()}{" "}
       </div>
@@ -53,7 +63,7 @@ const NoteItem: React.FC<NoteItemProps> = ({ note, deleteNote, router }) => (
         onClick={() => router.push(`/notes/${note.id}`)}
         className="mr-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
       >
-        View / Edit
+        View 
       </button>
       <button
         onClick={() => deleteNote(note.id)}
@@ -69,6 +79,8 @@ export default function NoteTaking() {
   const [notes, dispatch] = useReducer(notesReducer, []);
   const [newNoteTitle, setNewNoteTitle] = useState("");
   const router = useRouter();
+  const [level, setLevel] = useState("Easy");
+  const [type, setType] = useState("Array");
 
   useEffect(() => {
     // Fetch all notes from the API
@@ -95,7 +107,7 @@ export default function NoteTaking() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ title: newNoteTitle }),
+        body: JSON.stringify({ title: newNoteTitle, level: level, type: type }),
       })
         .then((response) => response.json())
         .then((data) => {
@@ -104,6 +116,8 @@ export default function NoteTaking() {
           const newNote: Note = {
             id: data.ID,
             title: data.Title,
+            level: data.Level,
+            type: data.Type,
             created_at: new Date(data.CreatedAt),
             updated_at: new Date(data.UpdatedAt),
           };
@@ -127,15 +141,43 @@ export default function NoteTaking() {
   };
 
   return (
-    <div className="container mx-auto p-4 ">
-      <div className="mb-4">
+    <div className="mx-auto p-10  min-w-screen min-h-screen text-white">
+      <div className="mb-4 flex space-x-2 items-center">
         <input
           type="text"
           value={newNoteTitle}
           onChange={(e) => setNewNoteTitle(e.target.value)}
           placeholder="Enter note title"
-          className="border border-gray-300 p-2 rounded"
+          className="border border-gray-500 p-2 rounded flex-grow  text-black"
         />
+        <Select
+          value={level}
+          onValueChange={setLevel}
+          placeholder="Easy"
+          className="ml-2 w-1/4 bg-gray-700 text-white"
+        >
+          <SelectItem value="Easy">Easy</SelectItem>
+          <SelectItem value="Medium">Medium</SelectItem>
+          <SelectItem value="Hard">Hard</SelectItem>
+        </Select>
+
+        <Select
+          value={type}
+          onValueChange={setType}
+          placeholder="Array"
+          className="ml-2 w-1/4 bg-gray-700 text-white"
+        >
+          <SelectItem value="Array">Array</SelectItem>
+          <SelectItem value="Linked-list">Linked List</SelectItem>
+          <SelectItem value="Tree">Tree</SelectItem>
+          <SelectItem value="Heap">Heap</SelectItem>
+          <SelectItem value="Backtrack">Backtracking</SelectItem>
+          <SelectItem value="Graph">Graph</SelectItem>
+          <SelectItem value="Dynamic-Programming">
+            Dynamic Programming
+          </SelectItem>
+        </Select>
+
         <button
           onClick={addNote}
           className="ml-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -143,7 +185,7 @@ export default function NoteTaking() {
           Add Note
         </button>
       </div>
-      <ul>
+      <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {notes.map((note) => (
           <NoteItem
             key={note.id}

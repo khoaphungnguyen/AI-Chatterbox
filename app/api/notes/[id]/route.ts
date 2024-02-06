@@ -35,8 +35,7 @@ export async function PUT(req: NextRequest){
   const problem = body.problem;
   const approach = body.approach;
   const solution = body.solution;
-
-
+  const code = body.code;
   const authToken = await auth();
   try {
     const response = await fetch(`${process.env.BACKEND_URL}/protected/notes/${noteID}`, {
@@ -49,6 +48,7 @@ export async function PUT(req: NextRequest){
           problem,
           approach,
           solution,
+          code,
         }),
       });
 

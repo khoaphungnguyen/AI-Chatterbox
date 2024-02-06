@@ -7,9 +7,9 @@ import {
   Dialog,
   DialogPanel,
   Title,
-  Textarea,
   Select,
   SelectItem,
+  Subtitle,
 } from "@tremor/react";
 import {
   ArrowLeft,
@@ -21,6 +21,13 @@ import {
   LoaderIcon,
   X,
 } from "lucide-react";
+import { CopyToClipboard } from "react-copy-to-clipboard";
+import { toast } from "react-hot-toast";
+
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import ReactMarkdown, { Components } from "react-markdown";
+import gfm from "remark-gfm";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 interface Note {
   id: number;
@@ -28,6 +35,9 @@ interface Note {
   problem: string;
   approach: string;
   solution: string;
+  code: string;
+  type: string;
+  level: string;
   updated_at: Date;
 }
 
@@ -37,23 +47,54 @@ interface NotePayload {
   solution: string;
 }
 
+interface CodePayload {
+  code: string;
+}
+
 type NotePageProps = {
   params: {
     id: string;
   };
 };
 
+const CopyButton: React.FC<{ codeString: string }> = ({ codeString }) => (
+  <CopyToClipboard
+    text={codeString}
+    onCopy={() => toast.success("Text copied to clipboard!")}
+  >
+    <button
+      className="absolute top-2 right-2 text-white rounded p-2 hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-opacity-50 transition ease-in-out duration-200"
+      title="Copy to clipboard"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={1.5}
+        stroke="currentColor"
+        className="w-4 h-4"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"
+        />
+      </svg>
+    </button>
+  </CopyToClipboard>
+);
+
 export default function NotePage({ params: { id } }: NotePageProps) {
   const router = useRouter();
   const [note, setNote] = useState<Note | null>(null);
   const [hints, setHints] = useState(null);
-  const [code, setCode] = useState("");
+
   const [isLoadingHint, setIsLoadingHint] = useState(false);
   const [isLoadingProblem, setIsLoadingProblem] = useState(false);
   const [isLoadingRevise, setIsLoadingRevise] = useState(false);
   const [isLoadingSolution, setIsLoadingSolution] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [value, setValue] = useState("Golang");
+  const [value, setValue] = useState("golang");
 
   useEffect(() => {
     const fetchNote = async () => {
@@ -72,6 +113,34 @@ export default function NotePage({ params: { id } }: NotePageProps) {
     fetchNote();
   }, [id]);
 
+  interface CustomCodeComponentProps {
+    node: any;
+    inline: boolean;
+    className?: string;
+    children?: React.ReactNode;
+  }
+
+  const CodeComponent: React.FC<CustomCodeComponentProps> = ({
+    inline,
+    className,
+    children,
+  }) => {
+    const language =
+      (className?.match(/language-([\w-.]+)/) || [])[1] || "plaintext";
+    const codeString = String(children).replace(/\n$/, "");
+
+    return !inline ? (
+      <div className="relative ">
+        <CopyButton codeString={codeString} />
+        <SyntaxHighlighter language={language} style={vscDarkPlus}>
+          {codeString}
+        </SyntaxHighlighter>
+      </div>
+    ) : (
+      <code className={className}>{children}</code>
+    );
+  };
+
   const handleUpdate = async (e: React.MouseEvent) => {
     e.preventDefault();
 
@@ -81,6 +150,38 @@ export default function NotePage({ params: { id } }: NotePageProps) {
       problem: note.problem,
       approach: note.approach,
       solution: note.solution,
+    };
+
+    try {
+      const response = await fetch(`/api/notes/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedNote),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update note: ${response.status}`);
+      }
+
+      // Update the note state with the new updatedAt value
+      setNote({
+        ...note,
+        updated_at: new Date(),
+      });
+    } catch (error) {
+      console.error("Failed to update note", error);
+    }
+  };
+
+  const handleSaveCode = async (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    if (!note) return;
+
+    const updatedNote: CodePayload = {
+      code: note.code,
     };
 
     try {
@@ -219,8 +320,15 @@ export default function NotePage({ params: { id } }: NotePageProps) {
     });
 
     const data = await response.json();
-    setCode(data);
+    setNote({
+      ...note,
+      code: data,
+    });
     setIsLoadingSolution(false);
+  };
+
+  const renderers: Components = {
+    code: CodeComponent as any,
   };
 
   if (!note) {
@@ -237,8 +345,8 @@ export default function NotePage({ params: { id } }: NotePageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-gray-900 text-gray-100 p-2 overflow-auto">
-      <div className="mb-4 flex flex-col md:flex-row items-center justify-between">
+    <main className="min-h-screen bg-gray-900 text-gray-100 p-1 overflow-auto">
+      <div className=" flex flex-col md:flex-row items-center justify-between">
         <button
           onClick={() => router.push("/notes")}
           className="flex items-center justify-center p-3 rounded-md text-red-400 bg-gray-800 hover:bg-gray-700 active:bg-gray-600 shadow-lg hover:shadow-none transition duration-300 ease-in-out"
@@ -247,9 +355,17 @@ export default function NotePage({ params: { id } }: NotePageProps) {
           Back to Notes
         </button>
 
-        <h1 className="text-4xl font-semibold text-center text-blue-400">
-          {note.title}
-        </h1>
+        <div>
+          <h1 className="text-4xl font-semibold text-center ">
+            {note.title}
+          </h1>
+          <p className="text-xl font-semibold text-center text-blue-400">
+            Level: <span className="text-red-500">{note.level}</span>
+          </p>
+          <p className="text-lg font-semibold text-center text-blue-300">
+            Data Type: {note.type}
+          </p>
+        </div>
 
         <div className="flex justify-center">
           <button
@@ -263,7 +379,7 @@ export default function NotePage({ params: { id } }: NotePageProps) {
         </div>
       </div>
 
-      <p className="text-sm text-gray-500 mt-2">
+      <p className="text-sm text-gray-500">
         Updated at: {new Date(note.updated_at).toLocaleString()}
       </p>
 
@@ -393,19 +509,23 @@ export default function NotePage({ params: { id } }: NotePageProps) {
                 >
                   Show
                 </button>
-                <Dialog
-                  open={isOpen}
-                  onClose={(val) => setIsOpen(val)}
-                  className="rounded-lg w-full h-full bg-gray-900 bg-opacity-90"
-                >
-                  <DialogPanel className="bg-gray-800 text-white p-6 w-3/4 h-3/4">
+                <Dialog open={isOpen} onClose={(val) => setIsOpen(val)}>
+                  <DialogPanel>
                     <div className="flex justify-between items-center mb-4">
-                      <Title>Show Solution</Title>
+                      <Title>View Solution</Title>
                       <Button variant="light" onClick={() => setIsOpen(false)}>
                         <X className="text-red-500" size={22} />
                       </Button>
                     </div>
-                    <Select value={value} onValueChange={setValue} placeholder="Golang">
+                    <Subtitle color="blue">
+                      Please choose your language
+                    </Subtitle>
+                    <Select
+                      value={value}
+                      onValueChange={setValue}
+                      placeholder="Golang"
+                      color="blue"
+                    >
                       <SelectItem value="1">Golang</SelectItem>
                       <SelectItem value="2">Python</SelectItem>
                       <SelectItem value="3">C</SelectItem>
@@ -414,24 +534,38 @@ export default function NotePage({ params: { id } }: NotePageProps) {
                     <div className="mb-4 mt-4">
                       {isLoadingSolution ? (
                         <div className="flex items-center justify-center space-x-2">
-                          <LoaderIcon size={22} className="animate-spin mr-2" />
+                          <LoaderIcon
+                            size={22}
+                            className="animate-spin mr-2 text-blue-500"
+                          />
                           Processing...
                         </div>
                       ) : (
-                        <Textarea
-                          value={code}
-                          placeholder="Your solution will be shown here..."
-                          style={{ height: "300px" }}
-                        />
+                        <div className=" bg-gray-800 overflow-hidden rounded-md p-4">
+                          <ReactMarkdown
+                            className="text-gray-200"
+                            remarkPlugins={[gfm]}
+                            components={renderers}
+                          >
+                            {note.code ? note.code : "No code generated yet"}
+                          </ReactMarkdown>
+                        </div>
                       )}
                     </div>
-                    <div className="flex justify-end space-x-4">
+                    <div className="flex justify-center space-x-4">
                       <Button
                         variant="primary"
                         color="green"
                         onClick={handleSolution}
                       >
                         Generate
+                      </Button>
+                      <Button
+                        variant="primary"
+                        color="blue"
+                        onClick={handleSaveCode}
+                      >
+                        Save
                       </Button>
                     </div>
                   </DialogPanel>

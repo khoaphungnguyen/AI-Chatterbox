@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   const input = body.input;
   const language = body.language;
 
-  const systemPromt = "Please provide a solution to the problem in" + language 
+  const systemPrompt = `Generate a solution for the problem using ${language}. Only provide code`;
 
   try {
     const response = await fetch(`${process.env.BACKEND_URL}/protected/hints`, {
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({"model": "gpt-3.5-turbo-1106",
         //body: JSON.stringify({"model": "codellama:13b",
       "input": input,
-    system:systemPromt}),
+    system:systemPrompt}),
     });
 
     // Check if the response from the backend server is OK
