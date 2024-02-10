@@ -8,7 +8,7 @@ import Link from "next/link";
 
 const Header: React.FC = () => {
   const { data: model, mutate: setModel } = useSWR("model", {
-    fallbackData: "gpt-3.5-turbo-1106",
+    fallbackData: "gpt-3.5-turbo-0125",
   });
   const { data: session } = useSession();
   const router = useRouter(); // Initialize useRouter
@@ -51,8 +51,8 @@ const Header: React.FC = () => {
           <ModelButton
             label="Default"
             icon="fire"
-            isActive={model === "gpt-3.5-turbo-1106"}
-            onClick={() => handleClick("gpt-3.5-turbo-1106")}
+            isActive={model === "gpt-3.5-turbo-0125"}
+            onClick={() => handleClick("gpt-3.5-turbo-0125")}
           />
           <ModelButton
             label="Fast"
@@ -69,8 +69,8 @@ const Header: React.FC = () => {
           <ModelButton
             label="GPT 4"
             icon="sparkles"
-            isActive={model === "gpt-4-1106-preview"}
-            onClick={() => handleClick("gpt-4-1106-preview")}
+            isActive={model === "gpt-4-0125-preview"}
+            onClick={() => handleClick("gpt-4-0125-preview")}
           />
         </div>
       </div>

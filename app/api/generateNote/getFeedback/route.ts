@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
 
   const input = body.input;
 
-  const systemPromt = "Guide the user through the algorithmic challenge, providing feedback on their approach. Don't provide direct solutions, but help the user find the solution themselves.";
+  const systemPromt = "Your role is to guide users through the algorithmic challenge by providing honest and constructive feedback. You're not here to solve the problem for them, but to help them understand if they're on the right track. Encourage critical thinking and problem-solving. If a user doesn't provide their approach, kindly remind them to do so before offering any feedback.";
 
   try {
     const response = await fetch(`${process.env.BACKEND_URL}/protected/hints`, {
@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
         'Content-Type': 'application/json',
         'Authorization': session ? `Bearer ${session?.accessToken}` : '',
       },
-      body: JSON.stringify({"model": "gpt-3.5-turbo-1106",
+      body: JSON.stringify({"model": "gpt-3.5-turbo-0125",
         //body: JSON.stringify({"model": "codellama:13b",
       "input": input,
     system:systemPromt}),

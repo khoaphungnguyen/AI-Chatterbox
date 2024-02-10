@@ -3,12 +3,17 @@
 import { useState, useEffect, useReducer } from "react";
 import { useRouter } from "next/navigation";
 import { parseISO } from "date-fns";
-import { Select, SelectItem } from "@tremor/react";
+import { Select, SelectItem, TextInput } from "@tremor/react";
+import useSWR from "swr";
+import { set } from "zod";
+import { LoaderIcon } from "lucide-react";
+
 interface Note {
   id: number;
   title: string;
   level: string;
   type: string;
+  threadID: string;
   created_at: Date;
   updated_at: Date;
 }
@@ -33,18 +38,18 @@ function notesReducer(state: Note[], action: Action) {
 
 interface NoteItemProps {
   note: Note;
-  deleteNote: (id: number) => void;
+  deleteNote: (id: number, threadID: string) => void;
   router: ReturnType<typeof useRouter>; // Using ReturnType to infer the type
 }
 
 const NoteItem: React.FC<NoteItemProps> = ({ note, deleteNote, router }) => (
   <li
     key={note.id}
-    className="flex items-center justify-between mb-4 p-4 border border-gray-300 rounded shadow-lg"
+    className="flex items-center justify-between mb-4 p-4 bg-gray-900 border border-gray-300 rounded shadow-lg"
   >
     <div>
       <div>
-        <span className="font-semibold text-lg text-black">{note.title}</span>
+        <span className="font-semibold text-lg text-white">{note.title}</span>
         <span className="ml-2 text-sm text-blue-500">Level: {note.level}</span>
         <span className="ml-2 text-sm text-green-500">
           Data Type:{note.type}
@@ -63,10 +68,12 @@ const NoteItem: React.FC<NoteItemProps> = ({ note, deleteNote, router }) => (
         onClick={() => router.push(`/notes/${note.id}`)}
         className="mr-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
       >
-        View 
+        View
+        {/* {note.threadID} */}
+        {/* {note.id} */}
       </button>
       <button
-        onClick={() => deleteNote(note.id)}
+        onClick={() => deleteNote(note.id, note.threadID)}
         className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
       >
         Delete
@@ -81,6 +88,7 @@ export default function NoteTaking() {
   const router = useRouter();
   const [level, setLevel] = useState("Easy");
   const [type, setType] = useState("Array");
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // Fetch all notes from the API
@@ -99,7 +107,26 @@ export default function NoteTaking() {
       .catch((error) => console.error("Failed to fetch notes", error));
   }, []);
 
+  const { data: model } = useSWR("model", {
+    fallbackData: "gpt-3.5-turbo-0125",
+  });
+
   const addNote = async () => {
+    setIsLoading(true);
+    const response = await fetch("/api/createThread", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ title: newNoteTitle, model: model }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to create thread: ${response.statusText}`);
+    }
+    const res = await response.json();
+    const threadID = res.threadId.id;
+
     if (newNoteTitle) {
       // Create the note via the API
       await fetch(`/api/notes`, {
@@ -107,17 +134,22 @@ export default function NoteTaking() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ title: newNoteTitle, level: level, type: type }),
+        body: JSON.stringify({
+          title: newNoteTitle,
+          level: level,
+          threadID: threadID,
+          type: type,
+        }),
       })
         .then((response) => response.json())
         .then((data) => {
-          console.log("data", data);
           // Create a new note with the data from the response
           const newNote: Note = {
             id: data.ID,
             title: data.Title,
             level: data.Level,
             type: data.Type,
+            threadID: data.ThreadID,
             created_at: new Date(data.CreatedAt),
             updated_at: new Date(data.UpdatedAt),
           };
@@ -127,28 +159,38 @@ export default function NoteTaking() {
         });
 
       setNewNoteTitle("");
+      setIsLoading(false);
     }
   };
 
-  const deleteNote = (id: number) => {
+  const deleteNote = async (id: number, threadID: string) => {
     // Delete the note via the API
-    fetch(`/api/notes/${id}`, {
+    setIsLoading(true);
+    const response = await fetch(`/api/deleteThread/${threadID}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      throw new Error("Failed to delete thread");
+    }
+
+    await fetch(`/api/notes/${id}`, {
       method: "DELETE",
     }).then(() => {
       // Remove the note from the local state
       dispatch({ type: "DELETE_NOTE", id });
     });
+    setIsLoading(false);
   };
 
   return (
-    <div className="mx-auto p-10  min-w-screen min-h-screen text-white">
-      <div className="mb-4 flex space-x-2 items-center">
-        <input
+    <div className="mx-auto p-10 min-w-screen min-h-screen bg-gray-800   text-white">
+      <div className="mb-4 flex  items-center ">
+        <TextInput
           type="text"
           value={newNoteTitle}
+          className="w-2/5"
           onChange={(e) => setNewNoteTitle(e.target.value)}
           placeholder="Enter note title"
-          className="border border-gray-500 p-2 rounded flex-grow  text-black"
         />
         <Select
           value={level}
@@ -185,16 +227,24 @@ export default function NoteTaking() {
           Add Note
         </button>
       </div>
-      <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {notes.map((note) => (
-          <NoteItem
-            key={note.id}
-            note={note}
-            deleteNote={deleteNote}
-            router={router}
-          />
-        ))}
-      </ul>
+      {isLoading ? (
+        <div className="flex items-center justify-center w-full h-screen">
+          <div className="flex items-center justify-center space-x-2">
+            <LoaderIcon size={30} className="animate-spin text-blue-500" />
+          </div>
+        </div>
+      ) : (
+        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {notes.map((note) => (
+            <NoteItem
+              key={note.id}
+              note={note}
+              deleteNote={deleteNote}
+              router={router}
+            />
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

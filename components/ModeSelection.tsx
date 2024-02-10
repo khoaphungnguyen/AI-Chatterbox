@@ -12,15 +12,15 @@ type OptionType = {
 function ModeSelection() {
   // Use SWR for managing the selected model state if needed
   const { data: model, mutate: setModel} = useSWR('model', {
-    fallbackData: 'gpt-3.5-turbo-1106' // Set the default or fallback model
+    fallbackData: 'gpt-3.5-turbo-0125' // Set the default or fallback model
   });
 
   // Directly define the models you want to use as options
   const modelOptions = [
-    { value: 'gpt-3.5-turbo-1106', label: 'Default' },
+    { value: 'gpt-3.5-turbo-0125', label: 'Default' },
     { value: 'openhermes', label: 'Fast' },
     { value: 'codellama', label: 'Code'},
-    { value: 'gpt-4-1106-preview', label: 'GPT-4' }
+    { value: 'gpt-4-0125-preview', label: 'GPT-4' }
   ];
 
   // Handler for when a new model is selected

@@ -31,7 +31,7 @@ const ThreadForm: React.FC<ThreadFormProps> = ({
   };
 
   return (
-    <div className="w-full py-10 rounded-lg shadow-md">
+    <div className="w-full py-10  ">
       {isStreaming && (
         <div className="flex justify-center">
           <button

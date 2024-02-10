@@ -84,7 +84,7 @@ const Message: React.FC<Props> = ({ message, id }) => {
 
   const addMessage = useChatStore((state) => state.addMessage);
   const { data: model } = useSWR("model", {
-    fallbackData: "gpt-3.5-turbo-1106",
+    fallbackData: "gpt-3.5-turbo-0125",
   });
   const { setIsStreaming, messages } = useChatStore();
   const router = useRouter();
@@ -174,7 +174,7 @@ const Message: React.FC<Props> = ({ message, id }) => {
           </p>
         </div>
       )}
-      <div className="px-1 rounded-lg my-1 cursor-pointer relative w-full shadow-sm">
+      <div className="px-1 rounded-lg my-1 cursor-pointer relative w-full ">
         {isSmartChat && (
           <div className="flex justify-end items-center space-x-4 ">
             <CopyToClipboard

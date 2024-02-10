@@ -1,6 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation"; // corrected from next/navigation
+import { useRouter, usePathname } from "next/navigation";
 import {
   ProgressCircle,
   Button,
@@ -17,9 +16,16 @@ import {
   Clipboard,
   CheckSquare,
   Lightbulb,
-  SquareGanttIcon,
   LoaderIcon,
   X,
+  MessageCircleHeartIcon,
+  MessageCircle,
+  MessageCircleCode,
+  MessageCircleDashed,
+  MessageCircleQuestion,
+  MoveDownIcon,
+  LucideMoveDown,
+  ArrowDownCircleIcon,
 } from "lucide-react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { toast } from "react-hot-toast";
@@ -29,8 +35,18 @@ import ReactMarkdown, { Components } from "react-markdown";
 import gfm from "remark-gfm";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
+import { useSession } from "next-auth/react";
+
+import React, { useEffect, useRef, useState } from "react";
+import Message from "@/components/Message";
+import useSWR from "swr";
+import useChatStore from "@/app/store/threadStore";
+import { ChatMessage } from "@/typings";
+import ThreadInput from "@/components/ThreadInput";
+
 interface Note {
   id: number;
+  threadID: string;
   title: string;
   problem: string;
   approach: string;
@@ -87,13 +103,14 @@ const CopyButton: React.FC<{ codeString: string }> = ({ codeString }) => (
 export default function NotePage({ params: { id } }: NotePageProps) {
   const router = useRouter();
   const [note, setNote] = useState<Note | null>(null);
-  const [hints, setHints] = useState(null);
-
-  const [isLoadingHint, setIsLoadingHint] = useState(false);
+  const [feedback, setFeedback] = useState(null);
+  const [isLoadingSave, setIsLoadingSave] = useState(false);
+  const [isLoadingFeedback, setIsLoadingFeedback] = useState(false);
   const [isLoadingProblem, setIsLoadingProblem] = useState(false);
   const [isLoadingRevise, setIsLoadingRevise] = useState(false);
   const [isLoadingSolution, setIsLoadingSolution] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [value, setValue] = useState("golang");
 
   useEffect(() => {
@@ -140,12 +157,27 @@ export default function NotePage({ params: { id } }: NotePageProps) {
       <code className={className}>{children}</code>
     );
   };
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const { data: model } = useSWR("model", {
+    fallbackData: "gpt-3.5-turbo-0125",
+  });
+  const { setIsStreaming } = useChatStore();
+  const { data: session } = useSession();
+  const pathname = usePathname();
 
   const handleUpdate = async (e: React.MouseEvent) => {
     e.preventDefault();
 
     if (!note) return;
-
+    setIsLoadingSave(true);
     const updatedNote: NotePayload = {
       problem: note.problem,
       approach: note.approach,
@@ -172,6 +204,8 @@ export default function NotePage({ params: { id } }: NotePageProps) {
       });
     } catch (error) {
       console.error("Failed to update note", error);
+    } finally {
+      setIsLoadingSave(false);
     }
   };
 
@@ -269,11 +303,12 @@ export default function NotePage({ params: { id } }: NotePageProps) {
     setIsLoadingRevise(false);
   };
 
-  const handleGenerateHints = async (
+  const handleGenerateFeedback = async (
     e: React.MouseEvent<HTMLButtonElement>
   ) => {
     e.preventDefault();
-    setIsLoadingHint(true);
+    setIsFeedbackOpen(true);
+    setIsLoadingFeedback(true);
     if (!note) return;
 
     const input =
@@ -286,7 +321,7 @@ export default function NotePage({ params: { id } }: NotePageProps) {
       ". User Solution:" +
       note?.solution;
 
-    const response = await fetch(`/api/generateNote/getHints`, {
+    const response = await fetch(`/api/generateNote/getFeedback`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -297,8 +332,8 @@ export default function NotePage({ params: { id } }: NotePageProps) {
     });
 
     const data = await response.json();
-    setHints(data);
-    setIsLoadingHint(false);
+    setFeedback(data);
+    setIsLoadingFeedback(false);
   };
 
   const handleSolution = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -326,6 +361,101 @@ export default function NotePage({ params: { id } }: NotePageProps) {
     });
     setIsLoadingSolution(false);
   };
+
+  const fetcher = async (url: string): Promise<ChatMessage[]> => {
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error("Network response was not ok");
+    }
+    const data = await res.json();
+    if (!Array.isArray(data)) {
+      throw new Error("Data is not an array");
+    }
+    return data;
+  };
+  const { data: initialMessages } = useSWR<ChatMessage[]>(
+    `/api/getMessages/${note?.threadID}`,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
+    }
+  );
+
+  const { messages, addMessage, updateMessage, reset } = useChatStore();
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    reset();
+
+    if (initialMessages) {
+      initialMessages.forEach((message) => {
+        if (!messages.some((m) => m.id === message.id)) {
+          addMessage(message);
+        }
+      });
+    }
+
+    let eventSource: EventSource | null = null; // Define eventSource in the outer scope
+
+    const setupSSE = () => {
+      eventSource = new EventSource(`/api/getStream/${note?.threadID}`);
+      let currentStreamId: string | null = null;
+
+      eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.content === "" && currentStreamId) {
+          currentStreamId = null;
+        } else if (!currentStreamId) {
+          currentStreamId = `stream-${Date.now()}`;
+          addMessage({
+            id: `chunk-${currentStreamId}`,
+            content: data.content,
+            streamId: currentStreamId,
+            role: "assistant",
+            createdAt: new Date().toISOString(),
+          });
+        } else {
+          updateMessage(
+            `chunk-${currentStreamId}`,
+            (prevContent) => prevContent + data.content
+          );
+        }
+      };
+
+      eventSource.onerror = () => {
+        if (eventSource) {
+          eventSource.close();
+        }
+        useChatStore.setState({ error: "Stream Error" });
+
+        // Try to reconnect after 5 seconds
+        setTimeout(setupSSE, 5000);
+      };
+    };
+
+    const cleanupSSE = () => {
+      if (eventSource) {
+        eventSource.close();
+      }
+    };
+
+    setupSSE();
+
+    return cleanupSSE;
+  }, [note?.threadID, initialMessages]);
+
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const renderers: Components = {
     code: CodeComponent as any,
@@ -355,15 +485,23 @@ export default function NotePage({ params: { id } }: NotePageProps) {
           Back to Notes
         </button>
 
-        <div>
-          <h1 className="text-4xl font-semibold text-center ">
-            {note.title}
-          </h1>
-          <p className="text-xl font-semibold text-center text-blue-400">
-            Level: <span className="text-red-500">{note.level}</span>
+        <div className="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-2 text-center">
+          <h1 className="text-4xl font-bold text-blue-500">{note.title}</h1>
+
+          <p
+            className={`text-sm py-1 px-2 font-medium rounded-xl text-white ${
+              note.level === "Hard"
+                ? "bg-red-600"
+                : note.level === "Medium"
+                ? "bg-yellow-500"
+                : "bg-green-500"
+            }`}
+          >
+            {note.level}
           </p>
-          <p className="text-lg font-semibold text-center text-blue-300">
-            Data Type: {note.type}
+
+          <p className="text-sm py-1 px-2 font-medium text-blue-800 bg-blue-200 border border-blue-300 rounded-xl">
+            {note.type}
           </p>
         </div>
 
@@ -374,88 +512,124 @@ export default function NotePage({ params: { id } }: NotePageProps) {
             className="flex items-center px-6 py-3 bg-blue-400 hover:bg-blue-500 active:bg-blue-600 text-white font-bold rounded-md transition duration-300 ease-in-out shadow-lg hover:shadow-none"
           >
             <Save className="mr-2 text-white" size={22} />
-            Update Note
+            Save
           </button>
         </div>
       </div>
 
-      <p className="text-sm text-gray-500">
-        Updated at: {new Date(note.updated_at).toLocaleString()}
-      </p>
-
-      <form className="space-y-8">
+      <form className="space-y-8 mt-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Suggestion Column */}
-          <div className="md:col-span-1 md:row-span-4 bg-gray-800 border border-gray-700 p-4 rounded-md overflow-auto flex flex-col justify-between space-y-4">
+          {/* Problem Column */}
+          <div className="md:col-span-1 md:row-span-4 ">
             <div>
-              <label className="text-lg font-bold mb-2 flex items-center text-orange-300">
-                <SquareGanttIcon className="mr-2 text-orange-300" size={22} />
-                Feeback
-              </label>
+              <div className="flex justify-between items-center">
+                <label className="text-lg font-bold mb-2 flex items-center text-teal-300">
+                  <Clipboard className="mr-2 text-teal-300" size={22} />
+                  Problem
+                </label>
+                <div className="relative">
+                  <button
+                    className={`w-24 h-8 bg-teal-500 hover:bg-teal-700 text-white font-bold rounded inline-flex items-center justify-center mb-2 ${
+                      isLoadingProblem ? "opacity-50 cursor-not-allowed" : ""
+                    } `}
+                    onClick={handleGenerateProblem}
+                    disabled={isLoadingProblem}
+                  >
+                    Create
+                  </button>
+                </div>
+              </div>
               <p>
-                {isLoadingHint ? (
-                  <div className="flex items-center justify-center space-x-2">
+                {isLoadingProblem ? (
+                  <div className="flex items-center justify-center space-x-2 w-full h-[50rem] p-4 rounded-md bg-gray-800 border border-gray-700">
                     <div className="flex items-center justify-center ">
                       <LoaderIcon size={22} className="animate-spin mr-2" />
                       Processing...
                     </div>
                   </div>
-                ) : hints ? (
-                  hints
                 ) : (
-                  "As an AI assistant, I'll guide your algorithmic challenge, providing feedback but not direct solutions. Let's start!"
+                  <textarea
+                    value={note.problem}
+                    onChange={(e) =>
+                      handleInputChange(e.target.value, "problem")
+                    }
+                    className="w-full h-[50rem] p-4 rounded-md bg-gray-800 border border-gray-700 focus:border-teal-500 focus:ring focus:ring-teal-300 focus:ring-opacity-50"
+                    placeholder="Describe the problem..."
+                  />
                 )}
               </p>
             </div>
-            <button
-              className={`bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-bold py-2 px-4 rounded shadow-lg hover:shadow-none transition duration-300 ease-in-out ${
-                isLoadingHint ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              onClick={handleGenerateHints}
-              disabled={isLoadingHint}
-            >
-              Get Hints
-            </button>
-          </div>
-
-          {/* Problem Content */}
-          <div className="md:col-span-3">
-            <div className="flex justify-between items-center">
-              <label className="text-lg font-bold mb-2 flex items-center text-teal-300">
-                <Clipboard className="mr-2 text-teal-300" size={22} />
-                Problem
-              </label>
-              <div className="relative">
-                <button
-                  className={`w-24 h-8 bg-teal-500 hover:bg-teal-700 text-white font-bold rounded inline-flex items-center justify-center mb-2 ${
-                    isLoadingProblem ? "opacity-50 cursor-not-allowed" : ""
-                  } `}
-                  onClick={handleGenerateProblem}
-                  disabled={isLoadingProblem}
-                >
-                  Generate
-                </button>
-              </div>
-            </div>
-            {isLoadingProblem ? (
-              <div className="flex items-center justify-center space-x-2 w-full h-40 p-4 rounded-md bg-gray-800 border border-gray-700">
-                <div className="flex items-center justify-center ">
-                  <LoaderIcon size={22} className="animate-spin mr-2" />
-                  Processing...
-                </div>
-              </div>
-            ) : (
-              <textarea
-                value={note.problem}
-                onChange={(e) => handleInputChange(e.target.value, "problem")}
-                className="w-full h-40 p-4 rounded-md bg-gray-800 border border-gray-700 focus:border-teal-500 focus:ring focus:ring-teal-300 focus:ring-opacity-50"
-                placeholder="Describe the problem..."
-              />
-            )}
           </div>
 
           {/* Approach */}
           <div className="md:col-span-3">
+            <div className="flex justify-between  p-1">
+              <div></div>
+              <div className="flex flex-col items-center justify-center space-y-2 bg-gray-900 text-white ">
+                <p className="text-center text-lg">
+                  Click the button below to generate feedback on your work.
+                  Remember, this is a tool to help you improve!
+                </p>
+
+                <button
+                  className="bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow-lg hover:shadow-none transition duration-300 ease-in-out"
+                  onClick={handleGenerateFeedback}
+                >
+                  Generate Feedback
+                </button>
+              </div>
+
+              <Dialog
+                open={isFeedbackOpen}
+                onClose={(val) => setIsFeedbackOpen(val)}
+              >
+                <DialogPanel>
+                  <div className="flex justify-between items-center  ">
+                    <div className="text-xl text-blue-100 font-bold">
+                      Feedback
+                    </div>
+
+                    <Button
+                      variant="light"
+                      onClick={() => setIsFeedbackOpen(false)}
+                    >
+                      <X className="text-red-500" size={22} />
+                    </Button>
+                  </div>
+
+                  <div className="mb-4">
+                    {isLoadingFeedback ? (
+                      <div className="flex items-center justify-center space-x-2">
+                        <LoaderIcon
+                          size={22}
+                          className="animate-spin mr-2 text-blue-500"
+                        />
+                        Processing...
+                      </div>
+                    ) : (
+                      <div className="prose max-h-[30rem]  overflow-y-auto  ">
+                        <ReactMarkdown
+                          className="text-gray-200"
+                          remarkPlugins={[gfm]}
+                          components={renderers}
+                        >
+                          {feedback}
+                        </ReactMarkdown>
+                      </div>
+                    )}
+                  </div>
+                </DialogPanel>
+              </Dialog>
+              {isLoadingSave ? (
+                <p className="text-sm text-red-500">
+                  Updated at: {new Date(note.updated_at).toLocaleString()}
+                </p>
+              ) : (
+                <p className="text-sm text-gray-500">
+                  Updated at: {new Date(note.updated_at).toLocaleString()}
+                </p>
+              )}
+            </div>
             <div className="flex justify-between items-center">
               <label className="text-lg font-bold mb-2 flex items-center text-yellow-300">
                 <Lightbulb className="mr-2 text-yellow-300" size={22} />
@@ -474,7 +648,7 @@ export default function NotePage({ params: { id } }: NotePageProps) {
               </div>
             </div>
             {isLoadingRevise ? (
-              <div className="flex items-center justify-center space-x-2 w-full h-40 p-4 rounded-md bg-gray-800 border border-gray-700">
+              <div className="flex items-center justify-center space-x-2 w-full h-48 p-4 rounded-md bg-gray-800 border border-gray-700">
                 <div className="flex items-center justify-center ">
                   <LoaderIcon size={22} className="animate-spin mr-2" />
                   Processing...
@@ -484,7 +658,7 @@ export default function NotePage({ params: { id } }: NotePageProps) {
               <textarea
                 value={note.approach}
                 onChange={(e) => handleInputChange(e.target.value, "approach")}
-                className="w-full h-40 p-4 rounded-md bg-gray-800 border border-gray-700 focus:border-yellow-500 focus:ring focus:ring-yellow-300 focus:ring-opacity-50"
+                className="w-full h-48 p-4 rounded-md bg-gray-800 border border-gray-700 focus:border-yellow-500 focus:ring focus:ring-yellow-300 focus:ring-opacity-50"
                 placeholder="Describe your approach..."
               />
             )}
@@ -492,7 +666,7 @@ export default function NotePage({ params: { id } }: NotePageProps) {
 
           {/* Solution */}
           <div className="md:col-span-3">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center ">
               <label className="text-lg font-bold mb-2 flex items-center text-green-300">
                 <CheckSquare className="mr-2 text-green-300" size={22} />
                 Solution
@@ -512,7 +686,9 @@ export default function NotePage({ params: { id } }: NotePageProps) {
                 <Dialog open={isOpen} onClose={(val) => setIsOpen(val)}>
                   <DialogPanel>
                     <div className="flex justify-between items-center mb-4">
-                      <Title>View Solution</Title>
+                      <div className="text-xl text-blue-100 font-bold">
+                        Solution
+                      </div>
                       <Button variant="light" onClick={() => setIsOpen(false)}>
                         <X className="text-red-500" size={22} />
                       </Button>
@@ -541,7 +717,7 @@ export default function NotePage({ params: { id } }: NotePageProps) {
                           Processing...
                         </div>
                       ) : (
-                        <div className=" bg-gray-800 overflow-hidden rounded-md p-4">
+                        <div className="bg-gray-800 max-h-96 overflow-y-auto rounded-md p-4">
                           <ReactMarkdown
                             className="text-gray-200"
                             remarkPlugins={[gfm]}
@@ -575,12 +751,75 @@ export default function NotePage({ params: { id } }: NotePageProps) {
             <textarea
               value={note.solution}
               onChange={(e) => handleInputChange(e.target.value, "solution")}
-              className="w-full h-60 p-4 rounded-md bg-gray-800 border border-gray-700 focus:border-green-500 focus:ring focus:ring-green-300 focus:ring-opacity-50"
-              placeholder="Describe the solution..."
+              className="w-full h-[29rem] p-4 rounded-md bg-gray-800 border border-gray-700 focus:border-green-500 focus:ring focus:ring-green-300 focus:ring-opacity-50"
+              placeholder="Implement your solution..."
             />
           </div>
         </div>
       </form>
+      <div>
+        <button
+          className="fixed right-6 bottom-12   bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-bold py-2 px-4 rounded-full shadow-lg hover:shadow-none transition duration-300 ease-in-out"
+          onClick={handleOpenModal}
+        >
+          <MessageCircleQuestion className="h-6 w-6" />
+        </button>
+
+        {isModalOpen && (
+          <div
+            className="fixed z-10 inset-0 overflow-y-auto"
+            onClick={handleCloseModal}
+          >
+            <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+              <div
+                className="fixed inset-0 transition-opacity"
+                aria-hidden="true"
+              >
+                <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+              </div>
+
+              <span
+                className="hidden sm:inline-block sm:align-middle sm:h-screen"
+                aria-hidden="true"
+              >
+                &#8203;
+              </span>
+
+              <div
+                className="p-8 inline-block align-bottom bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex flex-col h-full">
+                  <div
+                    ref={chatContainerRef}
+                    className="h-[40rem] overflow-y-auto"
+                  >
+                    {messages.length > 0 ? (
+                      messages.map((message) => (
+                        <Message
+                          key={`message-${message.id}`}
+                          message={message}
+                          id={note.threadID}
+                        />
+                      ))
+                    ) : (
+                      <div className="flex flex-col items-center   justify-center text-lg ont-semibold  ">
+                        Please ask a question below to get started!
+                        <span className="animate-bounce  py-2 px-4 f">
+                          <ArrowDownCircleIcon size={22} />
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="">
+                    <ThreadInput id={note.threadID} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </main>
   );
 }

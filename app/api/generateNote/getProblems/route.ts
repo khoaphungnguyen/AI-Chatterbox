@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
         'Content-Type': 'application/json',
         'Authorization': session ? `Bearer ${session?.accessToken}` : '',
       },
-      body: JSON.stringify({"model": "gpt-3.5-turbo-1106",
+      body: JSON.stringify({"model": "gpt-3.5-turbo-0125",
        //body: JSON.stringify({"model": "llama2:13b",
       "input": input,
     "system":systemPromt}),

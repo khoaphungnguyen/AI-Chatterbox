@@ -26,7 +26,7 @@ if (randomSuggestions){
         'Content-Type': 'application/json',
         'Authorization': session ? `Bearer ${session?.accessToken}` : '',
       },
-      body: JSON.stringify({"model": "gpt-3.5-turbo-1106"}),
+      body: JSON.stringify({"model": "gpt-3.5-turbo-0125"}),
     });
 
     // Check if the response from the backend server is OK
